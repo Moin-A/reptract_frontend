@@ -1,26 +1,225 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   Edit values in :root below to restyle the entire app.
+   ─ Brand colour  → change --brand + --brand-hover
+   ─ Font          → change --font-sans in layout.tsx (one import)
+   ─ Backgrounds   → change --app-bg, --surface, --sidebar-bg
+   ─ Radius        → change --radius
+   ─ Spacing       → change --page-padding, --sidebar-width, etc.
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Brand ────────────────────────────────────────
+     Change these two values to rebrand the whole app  */
+  --brand:           oklch(0.705 0.191 47.604);  /* orange-500 */
+  --brand-hover:     oklch(0.646 0.222 41.116);  /* orange-600 */
+  --brand-muted:     oklch(0.980 0.020 60.000);  /* orange-50  */
+  --brand-muted-fg:  oklch(0.550 0.180 47.000);  /* orange-700 */
+
+  /* ── App backgrounds ──────────────────────────── */
+  --app-bg:          oklch(0.985 0 0);            /* zinc-50  – page shell    */
+  --surface:         oklch(1.000 0 0);            /* white    – cards, panels */
+
+  /* ── Sidebar ──────────────────────────────────── */
+  --sidebar-bg:          oklch(0.145 0 0);        /* zinc-950 */
+  --sidebar-border-col:  oklch(0.250 0 0);        /* zinc-800 */
+  --sidebar-nav-hover:   oklch(0.210 0 0);        /* zinc-800 – nav hover     */
+  --sidebar-text:        oklch(0.550 0 0);        /* zinc-400 – muted text    */
+  --sidebar-text-sub:    oklch(0.420 0 0);        /* zinc-500 – secondary text*/
+  --sidebar-text-bright: oklch(1.000 0 0);        /* white    – active/labels */
+
+  /* ── Top bar ──────────────────────────────────── */
+  --topbar-bg:       oklch(1.000 0 0);            /* white    */
+  --topbar-border:   oklch(0.935 0 0);            /* zinc-100 */
+
+  /* ── Status colours ───────────────────────────── */
+  --status-success:     oklch(0.527 0.154 150);   /* green-600 */
+  --status-success-bg:  oklch(0.960 0.050 150);   /* green-50  */
+  --status-danger:      oklch(0.577 0.245 27);    /* red-600   */
+  --status-danger-bg:   oklch(0.970 0.050 27);    /* red-50    */
+  --status-warning:     oklch(0.700 0.150 70);    /* amber-500 */
+  --status-warning-bg:  oklch(0.970 0.040 80);    /* amber-50  */
+
+  /* ── Typography ───────────────────────────────── */
+  --text-xs:     0.75rem;    /* 12px */
+  --text-sm:     0.875rem;   /* 14px */
+  --text-base:   1rem;       /* 16px */
+  --text-lg:     1.125rem;   /* 18px */
+  --text-xl:     1.25rem;    /* 20px */
+  --text-2xl:    1.5rem;     /* 24px */
+  --text-3xl:    1.875rem;   /* 30px */
+  --text-4xl:    2.25rem;    /* 36px */
+
+  /* ── Layout dimensions ────────────────────────── */
+  --sidebar-width:    16rem;   /* w-64  – sidebar width    */
+  --topbar-height:    4rem;    /* h-16  – top bar height   */
+  --page-padding:     1.5rem;  /* p-6   – main content gap */
+  --page-max-w:       80rem;   /* max-w-7xl                */
+  --card-padding:     1.25rem; /* p-5   – card inner gap   */
+
+  /* ── Border radius ────────────────────────────── */
+  --radius: 0.625rem;
+
+  /* ── shadcn system tokens (keep last) ──────────── */
+  --primary:             var(--brand);
+  --primary-foreground:  oklch(1 0 0);
+  --background:          oklch(1 0 0);
+  --foreground:          oklch(0.145 0 0);
+  --card:                oklch(1 0 0);
+  --card-foreground:     oklch(0.145 0 0);
+  --popover:             oklch(1 0 0);
+  --popover-foreground:  oklch(0.145 0 0);
+  --secondary:           oklch(0.97 0 0);
+  --secondary-foreground:oklch(0.205 0 0);
+  --muted:               oklch(0.97 0 0);
+  --muted-foreground:    oklch(0.556 0 0);
+  --accent:              oklch(0.97 0 0);
+  --accent-foreground:   oklch(0.205 0 0);
+  --destructive:         oklch(0.577 0.245 27.325);
+  --border:              oklch(0.922 0 0);
+  --input:               oklch(0.922 0 0);
+  --ring:                var(--brand);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar:                    var(--sidebar-bg);
+  --sidebar-foreground:         var(--sidebar-text-bright);
+  --sidebar-primary:            var(--brand);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent:             var(--sidebar-nav-hover);
+  --sidebar-accent-foreground:  var(--sidebar-text-bright);
+  --sidebar-border:             var(--sidebar-border-col);
+  --sidebar-ring:               var(--brand);
 }
 
+/* ── Dark mode overrides ── */
+.dark {
+  --background:          oklch(0.145 0 0);
+  --foreground:          oklch(0.985 0 0);
+  --card:                oklch(0.205 0 0);
+  --card-foreground:     oklch(0.985 0 0);
+  --popover:             oklch(0.205 0 0);
+  --popover-foreground:  oklch(0.985 0 0);
+  --primary:             var(--brand);
+  --primary-foreground:  oklch(1 0 0);
+  --secondary:           oklch(0.269 0 0);
+  --secondary-foreground:oklch(0.985 0 0);
+  --muted:               oklch(0.269 0 0);
+  --muted-foreground:    oklch(0.708 0 0);
+  --accent:              oklch(0.269 0 0);
+  --accent-foreground:   oklch(0.985 0 0);
+  --destructive:         oklch(0.704 0.191 22.216);
+  --border:              oklch(1 0 0 / 10%);
+  --input:               oklch(1 0 0 / 15%);
+  --ring:                var(--brand);
+}
+
+/* ── Tailwind 4 theme registration ─────────────────────────────
+   These lines expose the CSS vars as Tailwind utility classes.
+   e.g. bg-brand, text-brand, bg-app-bg, bg-sidebar-bg, etc.    */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* shadcn passthrough */
+  --color-background:             var(--background);
+  --color-foreground:             var(--foreground);
+  --color-primary:                var(--primary);
+  --color-primary-foreground:     var(--primary-foreground);
+  --color-secondary:              var(--secondary);
+  --color-secondary-foreground:   var(--secondary-foreground);
+  --color-muted:                  var(--muted);
+  --color-muted-foreground:       var(--muted-foreground);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      var(--accent-foreground);
+  --color-destructive:            var(--destructive);
+  --color-border:                 var(--border);
+  --color-input:                  var(--input);
+  --color-ring:                   var(--ring);
+  --color-card:                   var(--card);
+  --color-card-foreground:        var(--card-foreground);
+  --color-popover:                var(--popover);
+  --color-popover-foreground:     var(--popover-foreground);
+  --color-chart-1:                var(--chart-1);
+  --color-chart-2:                var(--chart-2);
+  --color-chart-3:                var(--chart-3);
+  --color-chart-4:                var(--chart-4);
+  --color-chart-5:                var(--chart-5);
+  --color-sidebar-ring:           var(--sidebar-ring);
+  --color-sidebar-border:         var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent:         var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary:        var(--sidebar-primary);
+  --color-sidebar-foreground:     var(--sidebar-foreground);
+  --color-sidebar:                var(--sidebar);
+
+  /* Custom brand tokens → bg-brand, text-brand, etc. */
+  --color-brand:          var(--brand);
+  --color-brand-hover:    var(--brand-hover);
+  --color-brand-muted:    var(--brand-muted);
+  --color-brand-muted-fg: var(--brand-muted-fg);
+
+  /* Custom layout tokens → bg-app-bg, bg-surface, bg-sidebar-bg */
+  --color-app-bg:         var(--app-bg);
+  --color-surface:        var(--surface);
+  --color-sidebar-bg:     var(--sidebar-bg);
+  --color-topbar-bg:      var(--topbar-bg);
+  --color-topbar-border:  var(--topbar-border);
+  --color-sidebar-border-col: var(--sidebar-border-col);
+  --color-sidebar-nav-hover:  var(--sidebar-nav-hover);
+  --color-sidebar-text:       var(--sidebar-text);
+  --color-sidebar-text-sub:   var(--sidebar-text-sub);
+  --color-sidebar-text-bright:var(--sidebar-text-bright);
+
+  /* Status tokens → bg-success-bg, text-success, etc. */
+  --color-success:        var(--status-success);
+  --color-success-bg:     var(--status-success-bg);
+  --color-danger:         var(--status-danger);
+  --color-danger-bg:      var(--status-danger-bg);
+  --color-warning:        var(--status-warning);
+  --color-warning-bg:     var(--status-warning-bg);
+
+  /* Font */
+  --font-sans: var(--font-sans);
+  --font-mono: ui-monospace, monospace;
+  --font-heading: var(--font-heading);
+
+  /* Radius */
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.8);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Base layer ─────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  html {
+    @apply font-sans;
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
 }
