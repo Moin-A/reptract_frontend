@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AuthDialog } from "@/components/forms/auth_dialog";
 import {
   Users,
   TrendingUp,
@@ -16,6 +17,7 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
+import { useState } from "react";
 
 const features = [
   {
@@ -85,6 +87,7 @@ const testimonials = [
 ];
 
 export default function LandingPage() {
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="min-h-screen bg-surface text-foreground">
       {/* Navbar */}
@@ -102,9 +105,9 @@ export default function LandingPage() {
             <a href="#pricing"       className="hover:text-foreground transition-colors">Pricing</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Sign in</Button>
-            </Link>
+
+              <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>Sign in</Button>
+
             <Link href="/login">
               <Button size="sm" className="bg-brand hover:bg-brand-hover text-white">
                 Get started free
@@ -314,6 +317,7 @@ export default function LandingPage() {
             <a href="#" className="hover:text-sidebar-text-bright transition-colors">Contact</a>
           </div>
         </div>
+        <AuthDialog isOpen={isOpen} onOpenChange={() => {debugger;setIsOpen(!isOpen)}} />
       </footer>
     </div>
   );

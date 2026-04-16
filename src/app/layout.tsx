@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Oswald, Barlow } from "next/font/google";
+import { Oswald, Barlow, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -8,12 +9,7 @@ const oswald = Oswald({
   display: "swap",
 });
 
-const barlow = Barlow({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-sans",
-  display: "swap",
-});
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "RepTrack — Train Smarter. Hit Harder.",
@@ -26,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full ${oswald.variable} ${barlow.variable}`}>
+    <html lang="en" className={cn("h-full", oswald.variable, "font-sans", geist.variable)}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
