@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
 import { Dumbbell } from "lucide-react";
 import { useState } from "react";
 
@@ -40,6 +41,7 @@ function useAuthForm() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
+  const [serverError, setServerError] = useState<FormError | null>(null);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setValues(v => ({ ...v, [k]: e.target.value }));
@@ -67,14 +69,28 @@ function useAuthForm() {
     setTouched({ name: true, email: true, password: true, confirm: true });
     if (!valid) return;
     setSubmitting(true);
-    const res = await fetch('/api/users/sign_in', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values)
-    });
-    debugger;
-    console.log(await res.json());
-    setTimeout(() => { setSubmitting(false); setSucceeded(true); }, 1400);
+    setServerError(null);
+    try {
+      const res = await fetch('/api/users/sign_in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setServerError({
+          title: "We couldn't sign you in",
+          body: data?.error ?? data?.message ?? 'Something went wrong. Please try again.',
+        });
+        setSubmitting(false);
+        return;
+      }
+      setSubmitting(false);
+      setSucceeded(true);
+    } catch {
+      setServerError({ title: "We couldn't sign you in", body: 'Network error. Please check your connection.' });
+      setSubmitting(false);
+    }
   };
 
   const reset = () => {
@@ -91,7 +107,7 @@ function useAuthForm() {
 
   return { mode, setMode, values, set, blur, errors, valid,
            showPw, setShowPw, showConfirm, setShowConfirm,
-           pwScore, submitting, succeeded, submit, reset };
+           pwScore, submitting, succeeded, serverError, setServerError, submit, reset };
 }
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -369,6 +385,11 @@ export function AuthForm() {
               )}
 
               <div style={{ marginTop: 'auto', paddingTop: 10 }}>
+                <FormErrorBanner
+                  error={f.serverError}
+                  onDismiss={() => f.setServerError(null)}
+                  watchValues={[f.values.email, f.values.password]}
+                />
                 <button type="submit" disabled={!f.valid || f.submitting} style={{
                   width: '100%', height: 36, borderRadius: 10,
                   background: !f.valid ? '#C9C6BE' : T.accent,
