@@ -62,11 +62,18 @@ function useAuthForm() {
     ? nameOk && emailOk && pwOk && confirmOk
     : emailOk && values.password.length > 0;
 
-  const submit = (e: { preventDefault(): void }) => {
+  const submit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
     setTouched({ name: true, email: true, password: true, confirm: true });
     if (!valid) return;
     setSubmitting(true);
+    const res = await fetch('/api/users/sign_in', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values)
+    });
+    debugger;
+    console.log(await res.json());
     setTimeout(() => { setSubmitting(false); setSucceeded(true); }, 1400);
   };
 
