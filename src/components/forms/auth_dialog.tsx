@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
+import { m } from "framer-motion";
 import { Dumbbell } from "lucide-react";
 import { useState } from "react";
 
@@ -70,8 +71,14 @@ function useAuthForm() {
     if (!valid) return;
     setSubmitting(true);
     setServerError(null);
+    let endpoint;
+    if (mode === 'signup') {
+      endpoint = '/api/users';
+    } else {
+      endpoint = '/api/users/sign_in';
+    }
     try {
-      const res = await fetch('/api/users/sign_in', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
@@ -80,7 +87,7 @@ function useAuthForm() {
         const data = await res.json().catch(() => ({}));
         setServerError({
           title: "We couldn't sign you in",
-          body: data?.error ?? data?.message ?? 'Something went wrong. Please try again.',
+          body: data?.errors ?? data?.errors.join(", ") ?? 'Something went wrong. Please try again.',
         });
         setSubmitting(false);
         return;
@@ -272,7 +279,7 @@ export function AuthForm() {
     <>
       <style>{CSS}</style>
       <div style={{ width: '100%', background: 'white', borderRadius: 16, overflow: 'hidden',
-                    display: 'grid', gridTemplateColumns: '200px 1fr', minHeight: 520,
+                    display: 'grid', gridTemplateColumns: '200px 1fr', minHeight: 614,
                     boxShadow: '0 24px 60px -12px rgba(0,0,0,0.28), 0 8px 20px -8px rgba(0,0,0,0.12)' }}>
         <LeftPanel />
 
