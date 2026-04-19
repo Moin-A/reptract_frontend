@@ -21,6 +21,14 @@ const CSS = `
 @keyframes rt-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 @keyframes rt-spin   { to{transform:rotate(360deg)} }
 @keyframes rt-pop    { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+@media (max-width: 520px) {
+  .rt-auth-grid { grid-template-columns: 1fr !important; min-height: unset !important; }
+  .rt-left { flex-direction: row !important; padding: 14px 16px !important; align-items: center !important; gap: 12px; }
+  .rt-left-bg-text { display: none !important; }
+  .rt-left-features { display: none !important; }
+  .rt-left-logo { margin-bottom: 0 !important; }
+  .rt-right { padding: 14px 16px !important; min-height: 500px !important; }
+}
 `;
 
 function scorePassword(pw: string): number {
@@ -85,6 +93,7 @@ function useAuthForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        debugger
         console.log(data)
         setServerError({
           title: "We couldn't sign you in",
@@ -95,7 +104,8 @@ function useAuthForm() {
       }
       setSubmitting(false);
       setSucceeded(true);
-    } catch {
+    } catch (err) {
+      console.log(err)
       setServerError({ title: "We couldn't sign you in", body: 'Network error. Please check your connection.' });
       setSubmitting(false);
     }
@@ -237,17 +247,17 @@ function LeftPanel() {
     { Icon: IUsers,  label: 'Full member view'   },
   ];
   return (
-    <div style={{ background: '#0B0B0C', color: 'white', padding: '24px 20px',
+    <div className="rt-left" style={{ background: '#0B0B0C', color: 'white', padding: '24px 20px',
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', left: -10, top: '25%', right: 0,
+      <div className="rt-left-bg-text" style={{ position: 'absolute', left: -10, top: '25%', right: 0,
                     fontSize: 72, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 0.9,
                     color: 'rgba(255,255,255,0.04)', pointerEvents: 'none', userSelect: 'none' }}>
         Built<br/>for<br/>gyms.
       </div>
 
       {/* Logo */}
-      <div style={{ position: 'relative' }}>
+      <div className="rt-left-logo" style={{ position: 'relative', marginBottom: 0 }}>
         <div style={{ width: 34, height: 34, borderRadius: 9, background: T.accent,
                       display: 'grid', placeItems: 'center', marginBottom: 10 }}>
           <Dumbbell size={17} color="white" />
@@ -257,7 +267,7 @@ function LeftPanel() {
       </div>
 
       {/* Features */}
-      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="rt-left-features" style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {features.map(({ Icon, label }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 24, height: 24, borderRadius: 6, background: '#1C1C1F',
@@ -279,13 +289,13 @@ export function AuthForm() {
   return (
     <>
       <style>{CSS}</style>
-      <div style={{ width: '100%', background: 'white', borderRadius: 16, overflow: 'hidden',
+      <div className="rt-auth-grid" style={{ width: '100%', background: 'white', borderRadius: 16, overflow: 'hidden',
                     display: 'grid', gridTemplateColumns: '200px 1fr', minHeight: 614,
                     boxShadow: '0 24px 60px -12px rgba(0,0,0,0.28), 0 8px 20px -8px rgba(0,0,0,0.12)' }}>
         <LeftPanel />
 
         {/* Right — form */}
-        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', minHeight: 480 }}>
+        <div className="rt-right" style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', minHeight: 480 }}>
           {/* Tab switch */}
           <div style={{ display: 'inline-flex', padding: 3, borderRadius: 8, marginBottom: 18,
                         background: '#F2EFE9', border: `1px solid ${T.line}`, gap: 2, alignSelf: 'flex-start' }}>
@@ -360,13 +370,13 @@ export function AuthForm() {
                   } />
               </Field>
 
-              <Field label="Password" error={f.errors.password}
+              <Field label="Password" error={f.mode === 'signup' ? f.errors.password : null}
                 hint={f.mode === 'signin'
                   ? <a href="#" style={{ fontSize: 10, color: T.accent, textDecoration: 'none' }}>Forgot?</a>
                   : undefined}>
                 <IconInput icon={ILock} type={f.showPw ? 'text' : 'password'} autoComplete="current-password"
                   placeholder={f.mode === 'signup' ? 'At least 8 characters' : 'Your password'}
-                  value={f.values.password} onChange={f.set('password')} onBlur={f.blur('password')} error={f.errors.password}
+                  value={f.values.password} onChange={f.set('password')} onBlur={f.blur('password')} error={f.mode === 'signup' ? f.errors.password : null}
                   trailing={
                     <button type="button" onClick={() => f.setShowPw(s => !s)}
                       style={{ color: '#BFBCB6', display: 'flex', cursor: 'pointer', padding: '0 2px' }}>
@@ -439,7 +449,7 @@ interface AuthDialogProps { isOpen: boolean; onOpenChange: () => void; }
 export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 border-0 bg-transparent shadow-none sm:max-w-[620px] overflow-visible">
+      <DialogContent className="p-0 border-0 bg-transparent shadow-none w-[calc(100vw-24px)] sm:max-w-[620px] overflow-visible">
         <DialogTitle className="sr-only">Sign in to RepTrack</DialogTitle>
         <AuthForm />
       </DialogContent>
