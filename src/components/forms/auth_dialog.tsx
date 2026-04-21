@@ -97,7 +97,7 @@ function useAuthForm() {
         console.log(data)
         setServerError({
           title: "We couldn't sign you in",
-          body: data?.errors ?? data?.errors.join(", ") ?? 'Something went wrong. Please try again.',
+          body: data?.errors ?? data?.errors.join(", ") ?? data?.error ?? 'An unknown error occurred. Please try again.',
         });
         setSubmitting(false);
         return;
