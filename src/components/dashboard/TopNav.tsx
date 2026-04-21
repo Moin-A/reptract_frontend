@@ -2,10 +2,11 @@
 
 import {
   LayoutDashboard, CheckSquare, Megaphone, Users,
-  FileText, UserCircle, Activity, UserCheck, Dumbbell,
+  FileText, UserCircle, Activity, UserCheck, Dumbbell, Menu,
   type LucideIcon,
 } from "lucide-react";
 import { SearchInput } from "@/components/ui/search_input";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { C } from "./tokens";
 
 const NAV_TABS: { id: string; Icon: LucideIcon }[] = [
@@ -22,10 +23,13 @@ const NAV_TABS: { id: string; Icon: LucideIcon }[] = [
 type TopNavProps = {
   activeTab: string;
   onTabChange: (id: string) => void;
+  onMenuToggle?: () => void;
   userName?: string;
 };
 
-export function TopNav({ activeTab, onTabChange, userName = "Admin" }: TopNavProps) {
+export function TopNav({ activeTab, onTabChange, onMenuToggle, userName = "Admin" }: TopNavProps) {
+  const isMobile = useIsMobile();
+
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 100,
@@ -37,30 +41,48 @@ export function TopNav({ activeTab, onTabChange, userName = "Admin" }: TopNavPro
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 20px", height: 48, borderBottom: `1px solid ${C.line2}`,
       }}>
-        {/* Logo */}
+        {/* Left: hamburger (mobile) + logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {isMobile && (
+            <button
+              onClick={onMenuToggle}
+              aria-label="Open navigation menu"
+              style={{ background: "none", border: "none", color: "#A7A7AC", cursor: "pointer", display: "grid", placeItems: "center", padding: 4 }}
+            >
+              <Menu size={20} />
+            </button>
+          )}
           <LogoMark />
           <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: "white" }}>
             RepTrack
           </span>
         </div>
 
-        {/* User meta */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span style={{ fontSize: 12.5, color: "#8C8C92" }}>
-            Welcome, <b style={{ color: "white" }}>{userName}!</b>
-          </span>
-          <NavDivider />
-          <SearchInput />
-          <NavDivider />
-          <span style={{ fontSize: 12.5, color: "#A7A7AC", cursor: "pointer" }}>Profile</span>
-          <span style={{ fontSize: 12.5, color: "#A7A7AC", cursor: "pointer" }}>{userName}</span>
+        {/* Right: user meta */}
+        <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 10 : 14 }}>
+          {!isMobile && (
+            <>
+              <span style={{ fontSize: 12.5, color: "#8C8C92" }}>
+                Welcome, <b style={{ color: "white" }}>{userName}!</b>
+              </span>
+              <NavDivider />
+              <SearchInput />
+              <NavDivider />
+              <span style={{ fontSize: 12.5, color: "#A7A7AC", cursor: "pointer" }}>Profile</span>
+              <span style={{ fontSize: 12.5, color: "#A7A7AC", cursor: "pointer" }}>{userName}</span>
+            </>
+          )}
           <span style={{ fontSize: 12.5, color: C.accent, cursor: "pointer" }}>Logout</span>
         </div>
       </div>
 
-      {/* ── Row 2: nav tabs ── */}
-      <nav style={{ display: "flex", alignItems: "center", gap: 2, padding: "6px 20px" }}>
+      {/* ── Row 2: nav tabs (horizontally scrollable on mobile) ── */}
+      <nav style={{
+        display: "flex", alignItems: "center", gap: 2,
+        padding: "6px 20px",
+        overflowX: "auto",
+        scrollbarWidth: "none",
+      }}>
         {NAV_TABS.map(({ id, Icon }) => (
           <NavTab
             key={id}
@@ -93,7 +115,7 @@ function NavTab({ id, Icon, isActive, onClick }: { id: string; Icon: LucideIcon;
         fontSize: 13, fontWeight: 500, cursor: "pointer",
         background: isActive ? C.navActiveBg : "transparent",
         color: isActive ? "white" : "#A7A7AC",
-        border: "none", whiteSpace: "nowrap",
+        border: "none", whiteSpace: "nowrap", flexShrink: 0,
         transition: "background 140ms, color 140ms",
       }}
     >

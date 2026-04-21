@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 import { C }                  from "@/components/dashboard/tokens";
 import { TopNav }              from "@/components/dashboard/TopNav";
@@ -53,9 +54,11 @@ const ACTIVITY = [
 // ── page ─────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("Dashboard");
-  const [tasks, setTasks]         = useState<Task[]>(INITIAL_TASKS);
-  const [nextId, setNextId]       = useState(INITIAL_TASKS.length + 1);
+  const [activeTab, setActiveTab]   = useState("Dashboard");
+  const [tasks, setTasks]           = useState<Task[]>(INITIAL_TASKS);
+  const [nextId, setNextId]         = useState(INITIAL_TASKS.length + 1);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile                    = useIsMobile();
 
   function toggleTask(id: number) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
@@ -75,12 +78,17 @@ export default function DashboardPage() {
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, background: C.bg, color: C.ink, minHeight: "100vh" }}>
 
       {/* ── Layout Shell ── */}
-      <TopNav activeTab={activeTab} onTabChange={setActiveTab} userName="Admin" />
+      <TopNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onMenuToggle={() => setSidebarOpen(o => !o)}
+        userName="Admin"
+      />
 
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", minHeight: "calc(100vh - 52px)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr", minHeight: "calc(100vh - 52px)" }}>
 
         {/* ── Sidebar ── */}
-        <Sidebar />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* ── Main Content ── */}
         <main style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 16, maxWidth: 960 }}>

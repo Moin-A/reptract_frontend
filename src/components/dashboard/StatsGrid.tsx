@@ -1,3 +1,6 @@
+"use client";
+
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { MetricCard } from "./MetricCard";
 
 type StatDef = {
@@ -12,8 +15,9 @@ type StatsGridProps = {
 };
 
 export function StatsGrid({ stats }: StatsGridProps) {
+  const isMobile = useIsMobile();
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
       {stats.map(s => (
         <MetricCard key={s.label} label={s.label} value={s.value} delta={s.delta} trend={s.trend} />
       ))}

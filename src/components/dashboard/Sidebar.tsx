@@ -1,35 +1,96 @@
-import { List, Plus } from "lucide-react";
+"use client";
+
+import { List, Plus, X } from "lucide-react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { C } from "./tokens";
 
 type RecentItemDef = { type: string; name: string };
 
 type SidebarProps = {
+  isOpen?: boolean;
+  onClose?: () => void;
   recentItems?: RecentItemDef[];
 };
 
 const GLOBAL_LISTS = ["All contacts", "All leads", "All accounts"];
 
-export function Sidebar({ recentItems = DEFAULT_RECENT }: SidebarProps) {
+export function Sidebar({ isOpen = false, onClose, recentItems = DEFAULT_RECENT }: SidebarProps) {
+  const isMobile = useIsMobile();
+
+  const desktopStyle: React.CSSProperties = {
+    background: C.sidebarBg,
+    borderRight: `1px solid ${C.line}`,
+    padding: "20px 0",
+    position: "sticky",
+    top: 102,
+    height: "calc(100vh - 102px)",
+    overflowY: "auto",
+  };
+
+  const mobileStyle: React.CSSProperties = {
+    background: C.sidebarBg,
+    borderRight: `1px solid ${C.line}`,
+    padding: "20px 0",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: 260,
+    height: "100vh",
+    overflowY: "auto",
+    zIndex: 300,
+    transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+    transition: "transform 240ms cubic-bezier(0.4, 0, 0.2, 1)",
+  };
+
   return (
-    <aside style={{ background: C.sidebarBg, borderRight: `1px solid ${C.line}`, padding: "20px 0", position: "sticky", top: 102, height: "calc(100vh - 102px)", overflowY: "auto" }}>
-      <SidebarSection heading="Global lists" divider>
-        {GLOBAL_LISTS.map(label => (
-          <SidebarNavItem key={label} label={label} />
-        ))}
-        <SidebarAddLink label="Add global list" />
-      </SidebarSection>
+    <>
+      {/* Backdrop (mobile only) */}
+      {isMobile && (
+        <div
+          onClick={onClose}
+          style={{
+            position: "fixed", inset: 0, zIndex: 299,
+            background: "rgba(0,0,0,0.45)",
+            opacity: isOpen ? 1 : 0,
+            pointerEvents: isOpen ? "auto" : "none",
+            transition: "opacity 240ms",
+          }}
+        />
+      )}
 
-      <SidebarSection heading="My lists" divider>
-        <p style={{ fontSize: 13, color: C.muted, fontStyle: "italic" }}>No saved lists</p>
-        <SidebarAddLink label="Save a new list" />
-      </SidebarSection>
+      <aside style={isMobile ? mobileStyle : desktopStyle}>
+        {/* Close button (mobile only) */}
+        {isMobile && (
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 16px 12px" }}>
+            <button
+              onClick={onClose}
+              aria-label="Close menu"
+              style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, display: "grid", placeItems: "center" }}
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
 
-      <SidebarSection heading="Recent items">
-        {recentItems.map(item => (
-          <RecentItem key={item.type} type={item.type} name={item.name} />
-        ))}
-      </SidebarSection>
-    </aside>
+        <SidebarSection heading="Global lists" divider>
+          {GLOBAL_LISTS.map(label => (
+            <SidebarNavItem key={label} label={label} />
+          ))}
+          <SidebarAddLink label="Add global list" />
+        </SidebarSection>
+
+        <SidebarSection heading="My lists" divider>
+          <p style={{ fontSize: 13, color: C.muted, fontStyle: "italic" }}>No saved lists</p>
+          <SidebarAddLink label="Save a new list" />
+        </SidebarSection>
+
+        <SidebarSection heading="Recent items">
+          {recentItems.map(item => (
+            <RecentItem key={item.type} type={item.type} name={item.name} />
+          ))}
+        </SidebarSection>
+      </aside>
+    </>
   );
 }
 
