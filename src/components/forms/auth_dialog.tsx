@@ -43,7 +43,7 @@ function scorePassword(pw: string): number {
 }
 
 function useAuthForm() {
-  const [mode, setModeRaw] = useState<'signin' | 'signup'>('signup');
+  const [mode, setModeRaw] = useState<'signin' | 'signup'>('signin');
   const [values, setValues] = useState({ name: '', email: '', password: '', confirm: '' });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [showPw, setShowPw] = useState(false);

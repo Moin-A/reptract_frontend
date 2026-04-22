@@ -17,7 +17,8 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 const features = [
   {
@@ -88,6 +89,13 @@ const testimonials = [
 
 export default function LandingPage() {
   const [isOpen, setIsOpen] = useState(false);
+  const params = useSearchParams()
+
+  useEffect(()=>{
+    const isVerified = params.get("verified")
+    setIsOpen(isVerified === "true")
+  },[])
+  
   return (
     <div className="min-h-screen bg-surface text-foreground">
       {/* Navbar */}
