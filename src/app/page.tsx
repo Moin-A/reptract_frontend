@@ -17,7 +17,7 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const features = [
@@ -87,17 +87,20 @@ const testimonials = [
   },
 ];
 
+function SearchParamsHandler({ setIsOpen }: { setIsOpen: (v: boolean) => void }) {
+  const params = useSearchParams();
+  useEffect(() => {
+    setIsOpen(params.get("verified") === "true");
+  }, [params, setIsOpen]);
+  return null;
+}
+
 export default function LandingPage() {
   const [isOpen, setIsOpen] = useState(false);
-  const params = useSearchParams()
 
-  useEffect(()=>{
-    const isVerified = params.get("verified")
-    setIsOpen(isVerified === "true")
-  },[])
-  
   return (
     <div className="min-h-screen bg-surface text-foreground">
+      <Suspense fallback={null}><SearchParamsHandler setIsOpen={setIsOpen} /></Suspense>
       {/* Navbar */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
         <div className="mx-auto px-6 flex items-center justify-between" style={{ maxWidth: "var(--page-max-w)", height: "var(--topbar-height)" }}>
