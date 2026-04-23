@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Oswald, Barlow, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { AuthProvider } from "@/contexts/auth";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("h-full", oswald.variable, "font-sans", geist.variable)}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

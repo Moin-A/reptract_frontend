@@ -8,6 +8,7 @@ import {
 import { SearchInput } from "@/components/ui/search_input";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { C } from "./tokens";
+import { clientFetch } from "../../../service/api";
 
 const NAV_TABS: { id: string; Icon: LucideIcon }[] = [
   { id: "Dashboard",     Icon: LayoutDashboard },
@@ -29,6 +30,11 @@ type TopNavProps = {
 
 export function TopNav({ activeTab, onTabChange, onMenuToggle, userName = "Admin" }: TopNavProps) {
   const isMobile = useIsMobile();
+
+  const handleLogout = async () => {
+    await clientFetch("/users/sign_out", { method: "DELETE" });
+    window.location.href = "/";
+  };
 
   return (
     <div style={{
@@ -72,7 +78,7 @@ export function TopNav({ activeTab, onTabChange, onMenuToggle, userName = "Admin
               <span style={{ fontSize: 12.5, color: "#A7A7AC", cursor: "pointer" }}>{userName}</span>
             </>
           )}
-          <span style={{ fontSize: 12.5, color: C.accent, cursor: "pointer" }}>Logout</span>
+          <span style={{ fontSize: 12.5, color: C.accent, cursor: "pointer" }} onClick={handleLogout}>Logout</span>
         </div>
       </div>
 
