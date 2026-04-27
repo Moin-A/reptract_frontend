@@ -1,5 +1,5 @@
 "use client";
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
@@ -12,7 +12,6 @@ import { ActivityItem }        from "@/components/dashboard/ActivityItem";
 import { ExportBar }           from "@/components/dashboard/ExportBar";
 import { GhostButton }         from "@/components/dashboard/PageHeader";
 import { useDashboard }        from "@/components/dashboard/DashboardContext";
-import { clientFetch }         from "../../../service/api";
 
 const STATS: StatDef[] = [];
 
@@ -42,7 +41,7 @@ const Dashboard = () => {
   const { tasks, setTasks, nextId, setNextId, setTasksMetadata, tasksMetadata } = useDashboard();
 
   useEffect(() => {
-    clientFetch("/api/tasks").then(async res => {    
+    fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
       const data = await res.json();
       setTasks(data.tasks);
       setTasksMetadata(data.tasksMetadata);
