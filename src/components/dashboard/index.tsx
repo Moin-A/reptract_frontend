@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
@@ -11,6 +12,7 @@ import { ActivityItem }        from "@/components/dashboard/ActivityItem";
 import { ExportBar }           from "@/components/dashboard/ExportBar";
 import { GhostButton }         from "@/components/dashboard/PageHeader";
 import { useDashboard }        from "@/components/dashboard/DashboardContext";
+import { clientFetch }         from "../../../service/api";
 
 const STATS: StatDef[] = [];
 
@@ -37,6 +39,15 @@ const ACTIVITY = [
 
 const Dashboard = () => {
   const { tasks, setTasks, nextId, setNextId } = useDashboard();
+
+  useEffect(() => {
+    clientFetch("/api/tasks").then(async res => {
+      console.log("tasks raw response:", res.status, res.ok);
+      const data = await res.json();
+      console.log("tasks parsed:", data);
+      setTasks(data.tasks);
+    });
+  }, []);
 
   function toggleTask(id: number) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
