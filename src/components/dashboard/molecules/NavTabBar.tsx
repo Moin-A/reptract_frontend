@@ -1,12 +1,9 @@
-"use client";
-
 import {
   LayoutDashboard, CheckSquare, Megaphone, Users,
   FileText, UserCircle, Activity, UserCheck,
   type LucideIcon,
 } from "lucide-react";
 import { NavTab } from "../atoms/NavTab";
-import { useDashboard } from "../DashboardContext";
 
 const NAV_TABS: { id: string; Icon: LucideIcon }[] = [
   { id: "Dashboard",     Icon: LayoutDashboard },
@@ -19,9 +16,12 @@ const NAV_TABS: { id: string; Icon: LucideIcon }[] = [
   { id: "Team",          Icon: UserCheck },
 ];
 
-export function NavTabBar() {
-  const { activeTab, setActiveTab } = useDashboard();
+interface NavTabBarProps {
+  activeTab: string;
+  onTabChange: (id: string) => void;
+}
 
+export function NavTabBar({ activeTab, onTabChange }: NavTabBarProps) {
   return (
     <nav style={{
       display: "flex", alignItems: "center", gap: 2,
@@ -35,7 +35,7 @@ export function NavTabBar() {
           id={id}
           Icon={Icon}
           isActive={activeTab === id}
-          onClick={() => setActiveTab(id)}
+          onClick={() => onTabChange(id)}
         />
       ))}
     </nav>

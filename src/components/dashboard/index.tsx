@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
-import { PageHeader }          from "@/components/dashboard/PageHeader";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
 import { DashboardSection }    from "@/components/dashboard/DashboardSection";
 import { TaskItem, type Task } from "@/components/dashboard/TaskItem";
@@ -12,14 +10,7 @@ import { AccountItem }         from "@/components/dashboard/AccountItem";
 import { ActivityItem }        from "@/components/dashboard/ActivityItem";
 import { ExportBar }           from "@/components/dashboard/ExportBar";
 import { GhostButton }         from "@/components/dashboard/PageHeader";
-
-// ── static data ──────────────────────────────────────────────────
-
-const INITIAL_TASKS: Task[] = [
-  { id: 1, name: "My first Task",        due: "6 days late — was due Apr 16 at 12:00 AM", overdue: true,  badge: "Lunch",   badgeColor: "#6AAF5E", badgeTextColor: "white", done: false },
-  { id: 2, name: "Follow up with Priya", due: "Due today at 3:00 PM",                     overdue: false, badge: "Call",    badgeColor: "#2F6FEB", badgeTextColor: "white", done: false },
-  { id: 3, name: "Review Q2 proposal",   due: "Due Apr 25",                               overdue: false, badge: "Meeting", badgeColor: "#7C3AED", badgeTextColor: "white", done: false },
-];
+import { useDashboard }        from "@/components/dashboard/DashboardContext";
 
 const STATS: StatDef[] = [];
 
@@ -45,8 +36,7 @@ const ACTIVITY = [
 // ── component ────────────────────────────────────────────────────
 
 const Dashboard = () => {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
-  const [nextId, setNextId] = useState(INITIAL_TASKS.length + 1);
+  const { tasks, setTasks, nextId, setNextId } = useDashboard();
 
   function toggleTask(id: number) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
@@ -63,13 +53,8 @@ const Dashboard = () => {
   }
 
   return (
-    <main style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 16, maxWidth: 960 }}>
-
-          <PageHeader
-            title="Dashboards"
-            subtitle="Monday, 21 April 2026 · Good morning, Admin."
-          />
-
+    
+<>
           {/* KPI strip */}
           <StatsGrid stats={STATS} />
 
@@ -122,7 +107,8 @@ const Dashboard = () => {
           <footer style={{ textAlign: "center", padding: 24, fontSize: 11.5, color: C.muted2, borderTop: `1px solid ${C.line}`, marginTop: 8 }}>
             Powered by <a href="#" style={{ color: C.accent, fontWeight: 500 }}>RepTrack</a> v1.0 · © 2026
           </footer>
-        </main>
+
+    </>   
   );
 };
 

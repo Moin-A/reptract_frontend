@@ -17,11 +17,12 @@ export const metadata: Metadata = {
   description: "The gym OS built for athletes who track everything. 1,200+ programmes, elite coaching, and real-time progress analytics.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en" className={cn("h-full", oswald.variable, "font-sans", geist.variable)}>
       <body className="min-h-full flex flex-col">

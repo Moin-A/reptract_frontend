@@ -93,7 +93,6 @@ function useAuthForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        debugger
         console.log(data)
         setServerError({
           title: "We couldn't sign you in",
