@@ -71,7 +71,7 @@ const Dashboard = () => {
           <StatsGrid stats={STATS} />
 
           {/* My Tasks */}
-          {!tasks.length ? (
+          {isLoading ? (
             <div className="space-y-2">
               <Skeleton className="h-23 w-full" />
               <Skeleton className="h-23 w-full" />
