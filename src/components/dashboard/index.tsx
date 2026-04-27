@@ -1,6 +1,6 @@
 "use client";
-
-import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton"
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
@@ -38,14 +38,15 @@ const ACTIVITY = [
 // ── component ────────────────────────────────────────────────────
 
 const Dashboard = () => {
-  const { tasks, setTasks, nextId, setNextId } = useDashboard();
+  const [isLoading, setIsLoading] = useState(true);
+  const { tasks, setTasks, nextId, setNextId, setTasksMetadata, tasksMetadata } = useDashboard();
 
   useEffect(() => {
-    clientFetch("/api/tasks").then(async res => {
-      console.log("tasks raw response:", res.status, res.ok);
+    clientFetch("/api/tasks").then(async res => {    
       const data = await res.json();
-      console.log("tasks parsed:", data);
       setTasks(data.tasks);
+      setTasksMetadata(data.tasksMetadata);
+      setIsLoading(false);
     });
   }, []);
 
@@ -70,19 +71,23 @@ const Dashboard = () => {
           <StatsGrid stats={STATS} />
 
           {/* My Tasks */}
-          <DashboardSection
-            title="My Tasks"
-            action={<GhostButton icon={<Plus size={14} />} label="Add task" onClick={addTask} />}
-          >
-            {tasks.map((task, i) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={toggleTask}
-                isLast={i === tasks.length - 1}
-              />
-            ))}
-          </DashboardSection>
+          {!tasks.length ? (
+            <div className="space-y-2">
+              <Skeleton className="h-23 w-full" />
+              <Skeleton className="h-23 w-full" />
+              <Skeleton className="h-23 w-full" />
+            </div>
+          ) : (
+            <DashboardSection
+              title="My Tasks"
+              action={<GhostButton icon={<Plus size={14} />} label="Add task" onClick={addTask} />}
+            >
+              {tasks.map((task, i) => (
+                <TaskItem key={task.id} task={task} onToggle={toggleTask} isLast={i === tasks.length - 1} />
+              ))}
+            </DashboardSection>
+          )}
+    
 
           {/* My Opportunities */}
           <DashboardSection
