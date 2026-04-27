@@ -15,5 +15,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     },
   });
 
-  return response;
+  const data = await response.json();
+  return Response.json(data, { status: response.status });
 }

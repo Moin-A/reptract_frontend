@@ -11,7 +11,8 @@ export async function GET() {
     },
   });
 
-  return response;
+  const data = await response.json();
+  return Response.json(data, { status: response.status });
 }
 
 export async function POST(req: Request) {
@@ -27,5 +28,6 @@ export async function POST(req: Request) {
     },
   });
 
-  return response;
+  const data = await response.json();
+  return Response.json(data, { status: response.status });
 }
