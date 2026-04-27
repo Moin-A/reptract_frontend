@@ -47,6 +47,7 @@ const Dashboard = () => {
       setTasks(data.tasks);
       setTasksMetadata(data.tasksMetadata);
       setIsLoading(false);
+      console.log(data);
     });
   }, []);
 
