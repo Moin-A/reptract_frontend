@@ -213,6 +213,29 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Dashboard layout ───────────────────────────────────────── */
+.dashboard-grid {
+  display: flex;
+  min-height: calc(100vh - 52px);
+}
+
+.dashboard-grid > aside {
+  flex: 0 0 260px;
+  width: 260px;
+}
+
+.dashboard-grid > main {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid > aside {
+    flex: 0 0 0;
+    width: 0;
+  }
+}
+
 /* ── Base layer ─────────────────────────────────────────────── */
 @layer base {
   * {

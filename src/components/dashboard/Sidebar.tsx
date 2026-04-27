@@ -3,19 +3,22 @@
 import { List, Plus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { C } from "./tokens";
+import { useDashboard } from "./DashboardContext";
 
 type RecentItemDef = { type: string; name: string };
 
-type SidebarProps = {
-  isOpen?: boolean;
-  onClose?: () => void;
-  recentItems?: RecentItemDef[];
-};
+const DEFAULT_RECENT: RecentItemDef[] = [
+  { type: "Contact",     name: "Marco Kent" },
+  { type: "Account",     name: "Iron Union" },
+  { type: "Opportunity", name: "Pro tier upgrade" },
+];
 
 const GLOBAL_LISTS = ["All contacts", "All leads", "All accounts"];
 
-export function Sidebar({ isOpen = false, onClose, recentItems = DEFAULT_RECENT }: SidebarProps) {
+export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: RecentItemDef[] }) {
+  const { sidebarOpen, setSidebarOpen } = useDashboard();
   const isMobile = useIsMobile();
+  const onClose  = () => setSidebarOpen(false);
 
   const desktopStyle: React.CSSProperties = {
     background: C.sidebarBg,
@@ -32,34 +35,31 @@ export function Sidebar({ isOpen = false, onClose, recentItems = DEFAULT_RECENT 
     borderRight: `1px solid ${C.line}`,
     padding: "20px 0",
     position: "fixed",
-    top: 0,
-    left: 0,
+    top: 0, left: 0,
     width: 260,
     height: "100vh",
     overflowY: "auto",
     zIndex: 300,
-    transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+    transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
     transition: "transform 240ms cubic-bezier(0.4, 0, 0.2, 1)",
   };
 
   return (
     <>
-      {/* Backdrop (mobile only) */}
       {isMobile && (
         <div
           onClick={onClose}
           style={{
             position: "fixed", inset: 0, zIndex: 299,
             background: "rgba(0,0,0,0.45)",
-            opacity: isOpen ? 1 : 0,
-            pointerEvents: isOpen ? "auto" : "none",
+            opacity: sidebarOpen ? 1 : 0,
+            pointerEvents: sidebarOpen ? "auto" : "none",
             transition: "opacity 240ms",
           }}
         />
       )}
 
       <aside style={isMobile ? mobileStyle : desktopStyle}>
-        {/* Close button (mobile only) */}
         {isMobile && (
           <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 16px 12px" }}>
             <button
@@ -73,9 +73,7 @@ export function Sidebar({ isOpen = false, onClose, recentItems = DEFAULT_RECENT 
         )}
 
         <SidebarSection heading="Global lists" divider>
-          {GLOBAL_LISTS.map(label => (
-            <SidebarNavItem key={label} label={label} />
-          ))}
+          {GLOBAL_LISTS.map(label => <SidebarNavItem key={label} label={label} />)}
           <SidebarAddLink label="Add global list" />
         </SidebarSection>
 
@@ -85,16 +83,12 @@ export function Sidebar({ isOpen = false, onClose, recentItems = DEFAULT_RECENT 
         </SidebarSection>
 
         <SidebarSection heading="Recent items">
-          {recentItems.map(item => (
-            <RecentItem key={item.type} type={item.type} name={item.name} />
-          ))}
+          {recentItems.map(item => <RecentItem key={item.type} type={item.type} name={item.name} />)}
         </SidebarSection>
       </aside>
     </>
   );
 }
-
-// ── sub-components ────────────────────────────────────────────────
 
 function SidebarSection({ heading, divider, children }: { heading: string; divider?: boolean; children: React.ReactNode }) {
   return (
@@ -133,9 +127,3 @@ function RecentItem({ type, name }: RecentItemDef) {
     </div>
   );
 }
-
-const DEFAULT_RECENT: RecentItemDef[] = [
-  { type: "Contact",     name: "Marco Kent" },
-  { type: "Account",     name: "Iron Union" },
-  { type: "Opportunity", name: "Pro tier upgrade" },
-];
