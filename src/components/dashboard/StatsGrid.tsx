@@ -3,7 +3,7 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { MetricCard } from "./MetricCard";
 
-type StatDef = {
+export type StatDef = {
   label: string;
   value: string;
   delta: string;
