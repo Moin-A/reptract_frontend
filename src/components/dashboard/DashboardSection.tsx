@@ -4,10 +4,11 @@ type DashboardSectionProps = {
   title: string;
   action?: React.ReactNode;
   footer?: React.ReactNode;
+  formSlot?: React.ReactNode;
   children: React.ReactNode;
 };
 
-export function DashboardSection({ title, action, footer, children }: DashboardSectionProps) {
+export function DashboardSection({ title, action, footer, formSlot, children }: DashboardSectionProps) {
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
       {/* Header */}
@@ -22,6 +23,9 @@ export function DashboardSection({ title, action, footer, children }: DashboardS
           </div>
         )}
       </div>
+
+      {/* Optional inline form between header and body */}
+      {formSlot}
 
       {/* Body */}
       <div style={{ padding: "16px 20px" }}>{children}</div>

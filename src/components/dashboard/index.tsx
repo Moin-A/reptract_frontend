@@ -5,13 +5,14 @@ import { Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
 import { DashboardSection }    from "@/components/dashboard/DashboardSection";
-import { TaskItem, type Task } from "@/components/dashboard/TaskItem";
+import { TaskItem } from "@/components/dashboard/TaskItem";
 import { OpportunityItem }     from "@/components/dashboard/OpportunityItem";
 import { AccountItem }         from "@/components/dashboard/AccountItem";
 import { ActivityItem }        from "@/components/dashboard/ActivityItem";
 import { ExportBar }           from "@/components/dashboard/ExportBar";
 import { GhostButton }         from "@/components/dashboard/PageHeader";
 import { useDashboard }        from "@/components/dashboard/DashboardContext";
+import CollapsibleForm from "./CollapsibleForm";
 
 const STATS: StatDef[] = [];
 
@@ -38,13 +39,14 @@ const ACTIVITY = [
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { tasks, setTasks, nextId, setNextId, setTasksMetadata, tasksMetadata } = useDashboard();
+  const [formOpen, setFormOpen] = useState(false);
+  const { tasks, setTasks, setTasksMetadata } = useDashboard();
 
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
       const data = await res.json();
       setTasks(data.tasks);
-      setTasksMetadata(data.tasksMetadata);
+      setTasksMetadata(data.metadata);
       setIsLoading(false);
       console.log(data);
     });
@@ -54,21 +56,12 @@ const Dashboard = () => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
   }
 
-  function addTask() {
-    const blank: Task = {
-      id: nextId, name: "New task", due: "No due date",
-      overdue: false, badge: "General",
-      badgeColor: C.line, badgeTextColor: C.muted, done: false,
-    };
-    setTasks(prev => [...prev, blank]);
-    setNextId(n => n + 1);
-  }
-
-  return (
+return (
     
 <>
           {/* KPI strip */}
           <StatsGrid stats={STATS} />
+          
 
           {/* My Tasks */}
           {isLoading ? (
@@ -78,9 +71,11 @@ const Dashboard = () => {
               <Skeleton className="h-23 w-full" />
             </div>
           ) : (
+
             <DashboardSection
               title="My Tasks"
-              action={<GhostButton icon={<Plus size={14} />} label="Add task" onClick={addTask} />}
+              action={<GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
+              formSlot={<CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
             >
               {tasks.map((task, i) => (
                 <TaskItem key={task.id} task={task} onToggle={toggleTask} isLast={i === tasks.length - 1} />
