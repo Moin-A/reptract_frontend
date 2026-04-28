@@ -114,6 +114,7 @@ const TASK_BUCKETS: { count: number; label: string }[] = [
 ];
 
 function TaskStatusSection() {
+    const { tasksMetadata } = useDashboard();
   const [active, setActive] = React.useState<TaskStatus>("Pending");
 
   return (
@@ -144,49 +145,59 @@ function TaskStatusSection() {
 
       {/* Bucket row grid */}
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {TASK_BUCKETS.map(({ count, label }, i) => {
-          const isTotal = i === TASK_BUCKETS.length - 1;
-          return (
-            <div
-              key={label}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "20px 1fr auto",
-                alignItems: "center",
-                gap: 6,
-                padding: "5px 4px",
-                borderRadius: 5,
-                borderTop: isTotal ? `1px solid ${C.line}` : "none",
-                marginTop: isTotal ? 4 : 0,
-                cursor: "pointer",
-              }}
-            >
-              {isTotal ? (
-                <span />
-              ) : (
-                <input
-                  type="checkbox"
-                  readOnly
-                  style={{ width: 13, height: 13, accentColor: C.accent, cursor: "pointer", margin: 0 }}
-                />
-              )}
-              <span style={{
-                fontSize: 12,
-                color: isTotal ? C.ink : C.muted,
-                fontWeight: isTotal ? 600 : 400,
-              }}>
-                {label}
-              </span>
-              <span style={{
-                fontSize: 12,
-                fontWeight: isTotal ? 700 : 500,
-                color: count > 0 ? (label === "Overdue" ? C.err : C.ink) : C.muted2,
-              }}>
-                {count}
-              </span>
-            </div>
-          );
-        })}
+        {tasksMetadata?.buckets?.map((label: string, i: number) => (
+          <div
+            key={`task_${i}`}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "20px 1fr auto",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 4px",
+              borderRadius: 5,
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              readOnly
+              style={{ width: 13, height: 13, accentColor: C.accent, cursor: "pointer", margin: 0 }}
+            />
+            <span style={{ fontSize: 12, color: C.muted, fontWeight: 400 }}>
+              {label}
+            </span>
+            <span style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: label === "Overdue" ? C.err : C.ink,
+            }}>
+              {5}
+            </span>
+          </div>
+        ))}
+
+        {/* Hardcoded total row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "20px 1fr auto",
+            alignItems: "center",
+            gap: 6,
+            padding: "5px 4px",
+            borderRadius: 5,
+            borderTop: `1px solid ${C.line}`,
+            marginTop: 4,
+            cursor: "pointer",
+          }}
+        >
+          <span />
+          <span style={{ fontSize: 12, color: C.ink, fontWeight: 600 }}>
+            Total Pending Tasks
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>
+            27
+          </span>
+        </div>
       </div>
     </div>
   );
