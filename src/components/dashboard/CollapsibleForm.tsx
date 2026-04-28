@@ -38,6 +38,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
   const dueRef = useRef<HTMLSelectElement>(null);
   const assignRef = useRef<HTMLSelectElement>(null);
   const catRef = useRef<HTMLSelectElement>(null);
+  const descRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +53,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: nameRef.current.value.trim(),
+          description: descRef.current?.value.trim() || null,
           due: dueRef.current?.value,
           assigned_to: assignRef.current?.value || null,
           category: catRef.current?.value || null,
@@ -89,6 +91,20 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
               style={{ width: "100%", height: 38, border: `1px solid ${C.accent}`, borderRadius: 8, padding: "0 12px", fontSize: 14, fontFamily: "inherit", outline: "none", background: "white", color: C.ink }}
               onFocus={e => { e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,91,31,0.15)"; }}
               onBlur={e => { e.currentTarget.style.boxShadow = "none"; }}
+              onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
+            />
+          </div>
+
+          {/* Description */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Description</label>
+            <input
+              ref={descRef}
+              type="text"
+              placeholder="Optional description…"
+              style={{ width: "100%", height: 38, border: `1px solid ${C.line}`, borderRadius: 8, padding: "0 12px", fontSize: 13, fontFamily: "inherit", outline: "none", background: "white", color: C.ink }}
+              onFocus={e => { e.currentTarget.style.borderColor = C.accent; }}
+              onBlur={e => { e.currentTarget.style.borderColor = C.line; }}
               onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
             />
           </div>
