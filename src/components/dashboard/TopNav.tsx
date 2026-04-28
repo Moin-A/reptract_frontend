@@ -1,19 +1,14 @@
-"use client";
-
 import { C } from "./tokens";
 import { LogoMark }          from "./atoms/LogoMark";
 import { NavTabBar }          from "./molecules/NavTabBar";
 import { MobileMenuButton }   from "./molecules/MobileMenuButton";
 import { UserMeta }           from "./molecules/UserMeta";
-import { useDashboard }       from "./DashboardContext";
 
 interface TopNavProps {
   userName?: string;
 }
 
 export function TopNav({ userName }: TopNavProps) {
-  const { activeTab, setActiveTab } = useDashboard();
-
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 100,
@@ -33,7 +28,7 @@ export function TopNav({ userName }: TopNavProps) {
         </div>
         <UserMeta userName={userName} />
       </div>
-      <NavTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <NavTabBar />
     </div>
   );
 }

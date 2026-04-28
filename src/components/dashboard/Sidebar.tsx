@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { List, Plus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { C } from "./tokens";
@@ -16,7 +17,7 @@ const DEFAULT_RECENT: RecentItemDef[] = [
 const GLOBAL_LISTS = ["All contacts", "All leads", "All accounts"];
 
 export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: RecentItemDef[] }) {
-  const { sidebarOpen, setSidebarOpen } = useDashboard();
+  const { sidebarOpen, setSidebarOpen, activeTab } = useDashboard();
   const isMobile = useIsMobile();
   const onClose  = () => setSidebarOpen(false);
 
@@ -72,6 +73,14 @@ export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: Recent
           </div>
         )}
 
+        { activeTab == "Tasks" &&
+        <SidebarSection heading="Tasks" divider>
+          <TaskStatusSection />
+        </SidebarSection>
+        }
+
+
+
         <SidebarSection heading="Global lists" divider>
           {GLOBAL_LISTS.map(label => <SidebarNavItem key={label} label={label} />)}
           <SidebarAddLink label="Add global list" />
@@ -90,7 +99,100 @@ export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: Recent
   );
 }
 
-function SidebarSection({ heading, divider, children }: { heading: string; divider?: boolean; children: React.ReactNode }) {
+const TASK_STATUSES = ["Pending", "Assigned", "Completed"] as const;
+type TaskStatus = typeof TASK_STATUSES[number];
+
+const TASK_BUCKETS: { count: number; label: string }[] = [
+  { count: 7,  label: "Overdue" },
+  { count: 0,  label: "As Soon As Possible" },
+  { count: 1,  label: "Today" },
+  { count: 0,  label: "Tomorrow" },
+  { count: 8,  label: "This Week" },
+  { count: 8,  label: "Next Week" },
+  { count: 3,  label: "Sometime Later" },
+  { count: 27, label: "Total Pending Tasks" },
+];
+
+function TaskStatusSection() {
+  const [active, setActive] = React.useState<TaskStatus>("Pending");
+
+  return (
+    <div>
+      {/* Status column grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, marginBottom: 12 }}>
+        {TASK_STATUSES.map(status => (
+          <button
+            key={status}
+            onClick={() => setActive(status)}
+            style={{
+              padding: "6px 4px",
+              borderRadius: 6,
+              border: "none",
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 600,
+              textAlign: "center",
+              background: active === status ? C.ink : "transparent",
+              color: active === status ? "#fff" : C.muted,
+              transition: "background 150ms, color 150ms",
+            }}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
+      {/* Bucket row grid */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        {TASK_BUCKETS.map(({ count, label }, i) => {
+          const isTotal = i === TASK_BUCKETS.length - 1;
+          return (
+            <div
+              key={label}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "20px 1fr auto",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 4px",
+                borderRadius: 5,
+                borderTop: isTotal ? `1px solid ${C.line}` : "none",
+                marginTop: isTotal ? 4 : 0,
+                cursor: "pointer",
+              }}
+            >
+              {isTotal ? (
+                <span />
+              ) : (
+                <input
+                  type="checkbox"
+                  readOnly
+                  style={{ width: 13, height: 13, accentColor: C.accent, cursor: "pointer", margin: 0 }}
+                />
+              )}
+              <span style={{
+                fontSize: 12,
+                color: isTotal ? C.ink : C.muted,
+                fontWeight: isTotal ? 600 : 400,
+              }}>
+                {label}
+              </span>
+              <span style={{
+                fontSize: 12,
+                fontWeight: isTotal ? 700 : 500,
+                color: count > 0 ? (label === "Overdue" ? C.err : C.ink) : C.muted2,
+              }}>
+                {count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SidebarSection({ heading, divider, children }: { heading?: string; divider?: boolean; children: React.ReactNode }) {
   return (
     <div style={{ padding: "0 16px 20px", borderBottom: divider ? `1px solid ${C.line}` : "none", marginBottom: 20 }}>
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted2, marginBottom: 10 }}>
