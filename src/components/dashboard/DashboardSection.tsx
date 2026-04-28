@@ -1,3 +1,4 @@
+import { useDashboard } from "./DashboardContext";
 import { C } from "./tokens";
 
 type DashboardSectionProps = {

@@ -27,6 +27,7 @@ export function ActiveView() {
       />
       {activeTab === "Dashboard" && <Dashboard />}
       {activeTab === "Campaigns" && <CampaignDashboard />}
+      {activeTab === "Tasks" && <Dashboard />}
     </main>
   );
 }

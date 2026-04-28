@@ -40,7 +40,7 @@ const ACTIVITY = [
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const { tasks, setTasks, setTasksMetadata } = useDashboard();
+  const { tasks, setTasks, setTasksMetadata, activeTab } = useDashboard();
 
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
@@ -66,16 +66,16 @@ return (
           {/* My Tasks */}
           {isLoading ? (
             <div className="space-y-2">
-              <Skeleton className="h-23 w-full" />
-              <Skeleton className="h-23 w-full" />
-              <Skeleton className="h-23 w-full" />
+              <Skeleton className="h-22 w-full" />
+              <Skeleton className="h-22 w-full" />
+              <Skeleton className="h-22 w-full" />
             </div>
           ) : (
 
             <DashboardSection
               title="My Tasks"
-              action={<GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
-              formSlot={<CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
+              action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
+              formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
             >
               {tasks.map((task, i) => (
                 <TaskItem key={task.id} task={task} onToggle={toggleTask} isLast={i === tasks.length - 1} />
