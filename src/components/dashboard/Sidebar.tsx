@@ -102,16 +102,6 @@ export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: Recent
 const TASK_STATUSES = ["Pending", "Assigned", "Completed"] as const;
 type TaskStatus = typeof TASK_STATUSES[number];
 
-const TASK_BUCKETS: { count: number; label: string }[] = [
-  { count: 7,  label: "Overdue" },
-  { count: 0,  label: "As Soon As Possible" },
-  { count: 1,  label: "Today" },
-  { count: 0,  label: "Tomorrow" },
-  { count: 8,  label: "This Week" },
-  { count: 8,  label: "Next Week" },
-  { count: 3,  label: "Sometime Later" },
-  { count: 27, label: "Total Pending Tasks" },
-];
 
 function TaskStatusSection() {
     const { tasksMetadata } = useDashboard();

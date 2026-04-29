@@ -1,5 +1,9 @@
 import { Check } from "lucide-react";
+import { useState } from "react";
 import { C } from "./tokens";
+import { HoverAction } from "./molecules/HoverActions";
+import { useDashboard } from "./DashboardContext";
+
 
 export type Task = {
   id: number;
@@ -15,20 +19,29 @@ export type Task = {
 type TaskItemProps = {
   task: Task;
   onToggle: (id: number) => void;
+  onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
   isLast?: boolean;
+  onClick?: () => void;
 };
 
-export function TaskItem({ task, onToggle, isLast = false }: TaskItemProps) {
-  const nameColor  = task.overdue && !task.done ? C.err : C.ink;
+export function TaskItem({ task, onToggle, onEdit, onDelete, isLast = false, onClick }: TaskItemProps) {
+  const { activeTab } = useDashboard();
+  const [hovered, setHovered] = useState(false);
+  const nameColor  = task.overdue && !task.done ? C.err : activeTab !== "Tasks" ? C.accent : C.ink;
   const dueColor   = task.overdue && !task.done ? C.err : C.muted;
 
   return (
-    <div style={{
-      display: "flex", alignItems: "flex-start", gap: 12,
-      padding: "10px 0",
-      borderBottom: isLast ? "none" : `1px solid ${C.line}`,
-      opacity: task.done ? 0.45 : 1,
-    }}>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex", alignItems: "flex-start", gap: 12,
+        padding: "10px 0",
+        borderBottom: isLast ? "none" : `1px solid ${C.line}`,
+        opacity: task.done ? 0.45 : 1,
+      }}>
       {/* Checkbox */}
       <button
         role="checkbox"
@@ -47,7 +60,7 @@ export function TaskItem({ task, onToggle, isLast = false }: TaskItemProps) {
       </button>
 
       {/* Text */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, cursor: activeTab !== "Tasks" ? "pointer" : "default", color: activeTab === "Tasks" ? C.ink : C.muted, transition: "color 120ms" }}>
         <div style={{ fontSize: 13.5, fontWeight: 500, color: nameColor, textDecoration: task.done ? "line-through" : "none" }}>
           {task.name}
         </div>
@@ -63,6 +76,16 @@ export function TaskItem({ task, onToggle, isLast = false }: TaskItemProps) {
       }}>
         {task.badge}
       </span>
+
+      {/* Hover actions */}
+      {activeTab === "Tasks" && (
+        <HoverAction
+          hovered={hovered}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          task={task}
+        />
+      )}
     </div>
   );
 }

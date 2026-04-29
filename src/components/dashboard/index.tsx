@@ -1,7 +1,7 @@
 "use client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import {  Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
 import { DashboardSection }    from "@/components/dashboard/DashboardSection";
@@ -40,7 +40,7 @@ const ACTIVITY = [
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const { tasks, setTasks, setTasksMetadata, activeTab } = useDashboard();
+  const { tasks, setTasks, setTasksMetadata, activeTab, setActiveTab } = useDashboard();
 
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
@@ -54,6 +54,11 @@ const Dashboard = () => {
 
   function toggleTask(id: number) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  }
+
+  async function deleteTask(id: number) {
+    setTasks(prev => prev.filter(t => t.id !== id));
+    await fetch(`/api/tasks/${id}`, { method: "DELETE", credentials: "include" });
   }
 
 return (
@@ -78,7 +83,7 @@ return (
               formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
             >
               {tasks.map((task, i) => (
-                <TaskItem key={task.id} task={task} onToggle={toggleTask} isLast={i === tasks.length - 1} />
+                <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} isLast={i === tasks.length - 1} onClick={() => setActiveTab("Tasks")} />
               ))}
             </DashboardSection>
           )}
