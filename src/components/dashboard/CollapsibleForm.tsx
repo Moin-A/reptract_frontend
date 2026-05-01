@@ -1,12 +1,22 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Collapsible, CollapsibleContent } from "../ui/collapsible";
 import { C } from "@/components/dashboard/tokens";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
 
+const usersCache: Record<string, User[]> = {};
+
 interface Props {
   open: boolean;
   onClose: () => void;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
 }
 
 const selectStyle: React.CSSProperties = {
@@ -31,14 +41,27 @@ function ChevronDown() {
 }
 
 const CollapsibleForm = ({ open, onClose }: Props) => {
-  const { tasksMetadata } = useDashboard();
+  const { tasksMetadata, activeTab } = useDashboard();
 
   const dueOptions: any[] = tasksMetadata?.buckets ?? [];
+  const [users, setUsers] = useState<User[]>(usersCache[activeTab] ?? []);
   const nameRef = useRef<HTMLInputElement>(null);
   const dueRef = useRef<HTMLSelectElement>(null);
   const assignRef = useRef<HTMLSelectElement>(null);
   const catRef = useRef<HTMLSelectElement>(null);
   const descRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (usersCache[activeTab]) return;
+    fetch("/api/users", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => {
+        usersCache[activeTab] = data;
+        console.log({data})
+        setUsers(data);
+      });
+  }, [activeTab]);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,10 +156,9 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
                   onFocus={e => { e.currentTarget.style.borderColor = C.accent; }}
                   onBlur={e => { e.currentTarget.style.borderColor = C.line; }}>
                   <option value="">Unassigned</option>
-                  <option value="admin">Admin</option>
-                  <option value="marco">Marco Kent</option>
-                  <option value="priya">Priya Kumar</option>
-                  <option value="sam">Sam Rivera</option>
+                  {users.map((u, i) => (
+                    <option key={i} value={u.id}>{u.name}</option>
+                  ))}
                 </select>
                 <ChevronDown />
               </div>
