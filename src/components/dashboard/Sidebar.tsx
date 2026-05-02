@@ -135,7 +135,7 @@ function TaskStatusSection() {
 
       {/* Bucket row grid */}
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {Object.entries(tasks)?.map(([label, taskList], i) => (
+        {Object.entries(tasks ?? {}).map(([label, taskList], i) => (
           <div
             key={`task_${i}`}
             style={{
@@ -185,7 +185,7 @@ function TaskStatusSection() {
             Total Pending Tasks
           </span>
           <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>
-            {Object.values(tasks).reduce((sum, list) => sum + list.length, 0)}
+            {Object.values(tasks ?? {}).reduce((sum, list) => sum + list.length, 0)}
           </span>
         </div>
       </div>
