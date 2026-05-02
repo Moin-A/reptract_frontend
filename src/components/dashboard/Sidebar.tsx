@@ -135,7 +135,7 @@ function TaskStatusSection() {
 
       {/* Bucket row grid */}
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {Object.entries(tasks).map(([label, taskList], i) => (
+        {Object.entries(tasks)?.map(([label, taskList], i) => (
           <div
             key={`task_${i}`}
             style={{
