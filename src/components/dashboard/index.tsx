@@ -5,7 +5,7 @@ import {  Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
 import { DashboardSection }    from "@/components/dashboard/DashboardSection";
-import { TaskItem } from "@/components/dashboard/TaskItem";
+import { Task, TaskItem } from "@/components/dashboard/TaskItem";
 import { OpportunityItem }     from "@/components/dashboard/OpportunityItem";
 import { AccountItem }         from "@/components/dashboard/AccountItem";
 import { ActivityItem }        from "@/components/dashboard/ActivityItem";
@@ -40,15 +40,13 @@ const ACTIVITY = [
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const { tasks, setTasks, setTasksMetadata, activeTab, setActiveTab } = useDashboard();
+  const { tasks, setTasks, activeTab, setActiveTab } = useDashboard();
 
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
-      const data = await res.json();
-      setTasks(data.tasks);
-      setTasksMetadata(data.metadata);
+      const data: { buckets: { [key: string]: Task[] } } = await res.json();
+      setTasks(data.buckets);
       setIsLoading(false);
-      console.log(data);
     });
   }, []);
 
@@ -57,7 +55,10 @@ const Dashboard = () => {
   }
 
   async function deleteTask(id: number) {
-    setTasks(prev => prev.filter(t => t.id !== id));
+    setTasks(prev => Object.entries(prev).reduce((acc, [bucket, taskList]) => {
+      acc[bucket] = taskList.filter(t => t.id !== id);
+      return acc;
+    }, {} as { [key: string]: Task[] }));
     await fetch(`/api/tasks/${id}`, { method: "DELETE", credentials: "include" });
   }
 
@@ -82,8 +83,13 @@ return (
               action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
               formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
             >
-              {tasks.map((task, i) => (
-                <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} isLast={i === tasks.length - 1} onClick={() => setActiveTab("Tasks")} />
+              {Object.entries(tasks).map(([bucket, taskList], i) => (
+                <div key={bucket}>
+                  {taskList.length > 0 && <h4>{bucket}</h4>}
+                  { taskList.map((task, j) => (
+                    <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} isLast={j === taskList.length - 1} onClick={() => setActiveTab("Tasks")} />
+                  ))}
+                </div>
               ))}
             </DashboardSection>
           )}

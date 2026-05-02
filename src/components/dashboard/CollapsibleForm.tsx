@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { Collapsible, CollapsibleContent } from "../ui/collapsible";
 import { C } from "@/components/dashboard/tokens";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
+import { type Task } from "./TaskItem";
 
 const usersCache: Record<string, User[]> = {};
 
@@ -41,16 +42,16 @@ function ChevronDown() {
 }
 
 const CollapsibleForm = ({ open, onClose }: Props) => {
-  const { tasksMetadata, activeTab } = useDashboard();
+  const { tasks, activeTab, setTasks } = useDashboard();
 
-  const dueOptions: any[] = tasksMetadata?.buckets ?? [];
+  const dueOptions: { [key: string]: Task[] } = tasks ?? {};
   const [users, setUsers] = useState<User[]>(usersCache[activeTab] ?? []);
   const nameRef = useRef<HTMLInputElement>(null);
   const dueRef = useRef<HTMLSelectElement>(null);
   const assignRef = useRef<HTMLSelectElement>(null);
   const catRef = useRef<HTMLSelectElement>(null);
   const descRef = useRef<HTMLInputElement>(null);
-
+  
   useEffect(() => {
     if (usersCache[activeTab]) return;
     fetch("/api/users", { credentials: "include" })
@@ -83,6 +84,8 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
         }),
       });
       if (!res.ok) throw new Error(await res.text());
+      const newTask = await res.json();
+      setTasks(prev => ({ ...prev, [activeTab]: [...(prev[activeTab] || []), newTask] }));
       onClose();
     } catch {
       setError("Failed to create task. Please try again.");
@@ -141,7 +144,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
                 <select ref={dueRef} style={selectStyle}
                   onFocus={e => { e.currentTarget.style.borderColor = C.accent; }}
                   onBlur={e => { e.currentTarget.style.borderColor = C.line; }}>
-                  {dueOptions.map((item, index) => (
+                  {Object.keys(dueOptions).map((item, index) => (
                     <option key={index} value={item}>{item}</option>
                   ))}
                 </select>

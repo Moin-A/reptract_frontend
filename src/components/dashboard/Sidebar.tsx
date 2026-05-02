@@ -104,7 +104,7 @@ type TaskStatus = typeof TASK_STATUSES[number];
 
 
 function TaskStatusSection() {
-    const { tasksMetadata } = useDashboard();
+    const { tasks } = useDashboard();
   const [active, setActive] = React.useState<TaskStatus>("Pending");
 
   return (
@@ -135,7 +135,7 @@ function TaskStatusSection() {
 
       {/* Bucket row grid */}
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {tasksMetadata?.buckets?.map((label: string, i: number) => (
+        {Object.entries(tasks).map(([label, taskList], i) => (
           <div
             key={`task_${i}`}
             style={{
@@ -161,7 +161,7 @@ function TaskStatusSection() {
               fontWeight: 500,
               color: label === "Overdue" ? C.err : C.ink,
             }}>
-              {5}
+              {taskList.length}
             </span>
           </div>
         ))}
@@ -185,7 +185,7 @@ function TaskStatusSection() {
             Total Pending Tasks
           </span>
           <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>
-            27
+            {Object.values(tasks).reduce((sum, list) => sum + list.length, 0)}
           </span>
         </div>
       </div>
