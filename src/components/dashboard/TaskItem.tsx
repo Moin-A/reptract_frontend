@@ -81,7 +81,7 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, isLast = false, onC
       {activeTab === "Tasks" && (
         <HoverAction
           hovered={hovered}
-          onEdit={onEdit}
+          onEdit={() => onEdit?.(task.id)}
           onDelete={onDelete}
           task={task}
         />

@@ -40,6 +40,7 @@ const ACTIVITY = [
 const Dashboard = () => {
   const [formOpen, setFormOpen] = useState(false);
   const { tasks, setTasks, activeTab, setActiveTab } = useDashboard();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
@@ -63,9 +64,16 @@ const Dashboard = () => {
     await fetch(`/api/tasks/${id}`, { method: "DELETE", credentials: "include" });
   }
 
+  const handleEdit = (id: number) => {
+    console.log("Editing task:", id);
+    const task = Object.values(tasks).flat().find(t => t.id === id);
+    if (!task) return;
+    setEditingTask(task);
+    setFormOpen(true);
+  };
+
 return (
-    
-<>
+    <>
           {/* KPI strip */}
           <StatsGrid stats={STATS} />
           
@@ -74,10 +82,10 @@ return (
           <DashboardSection
             title="My Tasks"
             action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
-            formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
+            formSlot={activeTab == "Tasks" && <CollapsibleForm open={formOpen} editingTask={editingTask} onClose={() => { setFormOpen(false); setEditingTask(null); }} />}
           >
             {Object.entries(tasks)?.map(([bucket, taskList]) => (
-              <TaskBucket key={bucket} bucket={bucket} taskList={taskList} onToggle={toggleTask} onDelete={deleteTask} onTaskClick={() => setActiveTab("Tasks")} />
+              <TaskBucket key={bucket} bucket={bucket} onEdit={handleEdit} taskList={taskList} onToggle={toggleTask} onDelete={deleteTask} onTaskClick={() => setActiveTab("Tasks")} />
             ))}
           </DashboardSection>
     

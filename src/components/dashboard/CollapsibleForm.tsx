@@ -10,6 +10,7 @@ const usersCache: Record<string, User[]> = {};
 interface Props {
   open: boolean;
   onClose: () => void;
+  editingTask?: Task | null;
 }
 
 export interface User {
@@ -41,8 +42,13 @@ function ChevronDown() {
   );
 }
 
-const CollapsibleForm = ({ open, onClose }: Props) => {
+const CollapsibleForm = ({ open, onClose, editingTask }: Props) => {
   const { tasks, activeTab, setTasks } = useDashboard();
+  console.log({editingTask, tasks})
+  const isEditing = !!editingTask;
+  const editingBucket = editingTask
+    ? Object.entries(tasks).find(([, list]) => list.some(t => t.id === editingTask.id))?.[0]
+    : undefined;
 
   const dueOptions: { [key: string]: Task[] } = tasks ?? {};
   const [users, setUsers] = useState<User[]>(usersCache[activeTab] ?? []);
@@ -51,7 +57,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
   const assignRef = useRef<HTMLSelectElement>(null);
   const catRef = useRef<HTMLSelectElement>(null);
   const descRef = useRef<HTMLInputElement>(null);
-  
+
   useEffect(() => {
     if (usersCache[activeTab]) return;
     fetch("/api/users", { credentials: "include" })
@@ -62,6 +68,23 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
       });
   }, [activeTab]);
 
+  // Pre-fill refs when opening in edit mode, clear when opening in create mode
+  useEffect(() => {
+    if (!open) return;
+    if (editingTask) {
+      if (nameRef.current) nameRef.current.value = editingTask.name;
+      if (dueRef.current && editingBucket) dueRef.current.value = editingBucket;
+      if (catRef.current) catRef.current.value = editingTask.badge?.toLowerCase() ?? "";
+      if (descRef.current) descRef.current.value = "";
+      if (assignRef.current) assignRef.current.value = "";
+    } else {
+      if (nameRef.current) nameRef.current.value = "";
+      if (descRef.current) descRef.current.value = "";
+      if (assignRef.current) assignRef.current.value = "";
+      if (catRef.current) catRef.current.value = "";
+    }
+  }, [open, editingTask]);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,24 +93,49 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/tasks", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: nameRef.current.value.trim(),
-          description: descRef.current?.value.trim() || null,
-          bucket: dueRef.current?.value,
-          assigned_to: assignRef.current?.value || null,
-          category: catRef.current?.value || null,
-        }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const newTask = await res.json();
-      setTasks(prev => ({ ...prev, [newTask.bucket]: [...(prev[newTask.bucket] || []), newTask] }));
+      if (isEditing && editingTask) {
+        const res = await fetch(`/api/tasks/${editingTask.id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: nameRef.current.value.trim(),
+            description: descRef.current?.value.trim() || null,
+            bucket: dueRef.current?.value,
+            assigned_to: assignRef.current?.value || null,
+            category: catRef.current?.value || null,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const updated = await res.json();
+        setTasks(prev => {
+          const next = Object.fromEntries(
+            Object.entries(prev).map(([b, list]) => [b, list.filter(t => t.id !== editingTask.id)])
+          );
+          const newBucket = updated.bucket ?? dueRef.current?.value;
+          next[newBucket] = [...(next[newBucket] ?? []), updated];
+          return next;
+        });
+      } else {
+        const res = await fetch("/api/tasks", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: nameRef.current.value.trim(),
+            description: descRef.current?.value.trim() || null,
+            bucket: dueRef.current?.value,
+            assigned_to: assignRef.current?.value || null,
+            category: catRef.current?.value || null,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const newTask = await res.json();
+        setTasks(prev => ({ ...prev, [newTask.bucket]: [...(prev[newTask.bucket] || []), newTask] }));
+      }
       onClose();
     } catch {
-      setError("Failed to create task. Please try again.");
+      setError(`Failed to ${isEditing ? "update" : "create"} task. Please try again.`);
     } finally {
       setSubmitting(false);
     }
@@ -100,7 +148,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
 
           {/* Title row */}
           <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            Create Task
+            {isEditing ? "Edit Task" : "Create Task"}
             <button onClick={onClose} style={{ color: C.muted, fontSize: 20, lineHeight: 1, padding: "2px 6px", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
               &times;
             </button>
@@ -191,7 +239,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
           {/* Actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={handleSubmit} disabled={submitting} style={{ display: "inline-flex", alignItems: "center", padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, background: C.accent, color: "white", border: `1px solid ${C.accent}`, cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1, fontFamily: "inherit" }}>
-              {submitting ? "Creating…" : "Create Task"}
+              {submitting ? (isEditing ? "Saving…" : "Creating…") : (isEditing ? "Save Changes" : "Create Task")}
             </button>
             <span style={{ fontSize: 13, color: C.muted }}>or</span>
             <button onClick={onClose} disabled={submitting} style={{ fontSize: 13, color: C.accent, fontWeight: 500, cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}>
