@@ -4,7 +4,8 @@ import {  Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/dashboard/StatsGrid";
 import { DashboardSection }    from "@/components/dashboard/DashboardSection";
-import { Task, TaskItem } from "@/components/dashboard/TaskItem";
+import { Task } from "@/components/dashboard/TaskItem";
+import { TaskBucket } from "@/components/dashboard/TaskBucket";
 import { OpportunityItem }     from "@/components/dashboard/OpportunityItem";
 import { AccountItem }         from "@/components/dashboard/AccountItem";
 import { ActivityItem }        from "@/components/dashboard/ActivityItem";
@@ -76,12 +77,7 @@ return (
             formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
           >
             {Object.entries(tasks)?.map(([bucket, taskList]) => (
-              <div key={bucket}>
-                {taskList.length > 0 && <h4>{bucket}</h4>}
-                {taskList.map((task, j) => (
-                  <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} isLast={j === taskList.length - 1} onClick={() => setActiveTab("Tasks")} />
-                ))}
-              </div>
+              <TaskBucket key={bucket} bucket={bucket} taskList={taskList} onToggle={toggleTask} onDelete={deleteTask} onTaskClick={() => setActiveTab("Tasks")} />
             ))}
           </DashboardSection>
     

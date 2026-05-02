@@ -84,8 +84,7 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
       });
       if (!res.ok) throw new Error(await res.text());
       const newTask = await res.json();
-      const bucket = dueRef.current?.value ?? "";
-      setTasks(prev => ({ ...prev, [bucket]: [...(prev[bucket] || []), newTask] }));
+      setTasks(prev => ({ ...prev, [newTask.bucket]: [...(prev[newTask.bucket] || []), newTask] }));
       onClose();
     } catch {
       setError("Failed to create task. Please try again.");
