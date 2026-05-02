@@ -51,7 +51,10 @@ const Dashboard = () => {
   }, []);
 
   function toggleTask(id: number) {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    setTasks(prev => Object.entries(prev).reduce((acc, [bucket, taskList]) => {
+      acc[bucket] = taskList.map(t => t.id === id ? { ...t, done: !t.done } : t);
+      return acc;
+    }, {} as { [key: string]: Task[] }));
   }
 
   async function deleteTask(id: number) {
@@ -83,7 +86,7 @@ return (
               action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
               formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
             >
-              {Object.entries(tasks).map(([bucket, taskList], i) => (
+              {Object.entries(tasks).map(([bucket, taskList]) => (
                 <div key={bucket}>
                   {taskList.length > 0 && <h4>{bucket}</h4>}
                   { taskList.map((task, j) => (
