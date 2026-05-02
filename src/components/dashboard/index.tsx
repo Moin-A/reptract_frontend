@@ -45,7 +45,7 @@ const Dashboard = () => {
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
       const data: { buckets: { [key: string]: Task[] } } = await res.json();
-      setTasks(data.buckets ?? {});
+      setTasks(data.buckets);
       setIsLoading(false);
     });
   }, []);
@@ -86,7 +86,7 @@ return (
               action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
               formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
             >
-              {Object.entries(tasks ?? {}).map(([bucket, taskList]) => (
+              {Object.entries(tasks)?.map(([bucket, taskList]) => (
                 <div key={bucket}>
                   {taskList.length > 0 && <h4>{bucket}</h4>}
                   { taskList.map((task, j) => (
