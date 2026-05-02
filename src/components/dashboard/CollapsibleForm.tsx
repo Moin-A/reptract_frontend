@@ -58,7 +58,6 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
       .then(r => r.json())
       .then(data => {
         usersCache[activeTab] = data;
-        console.log({data})
         setUsers(data);
       });
   }, [activeTab]);
@@ -78,14 +77,15 @@ const CollapsibleForm = ({ open, onClose }: Props) => {
         body: JSON.stringify({
           name: nameRef.current.value.trim(),
           description: descRef.current?.value.trim() || null,
-          due: dueRef.current?.value,
+          bucket: dueRef.current?.value,
           assigned_to: assignRef.current?.value || null,
           category: catRef.current?.value || null,
         }),
       });
       if (!res.ok) throw new Error(await res.text());
       const newTask = await res.json();
-      setTasks(prev => ({ ...prev, [activeTab]: [...(prev[activeTab] || []), newTask] }));
+      const bucket = dueRef.current?.value ?? "";
+      setTasks(prev => ({ ...prev, [bucket]: [...(prev[bucket] || []), newTask] }));
       onClose();
     } catch {
       setError("Failed to create task. Please try again.");
