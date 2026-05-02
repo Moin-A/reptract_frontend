@@ -1,5 +1,4 @@
 "use client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import {  Plus } from "lucide-react";
 import { C }                  from "@/components/dashboard/tokens";
@@ -38,7 +37,6 @@ const ACTIVITY = [
 // ── component ────────────────────────────────────────────────────
 
 const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const { tasks, setTasks, activeTab, setActiveTab } = useDashboard();
 
@@ -46,7 +44,6 @@ const Dashboard = () => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
       const data: { buckets: { [key: string]: Task[] } } = await res.json();
       setTasks(data.buckets);
-      setIsLoading(false);
     });
   }, []);
 
@@ -73,29 +70,20 @@ return (
           
 
           {/* My Tasks */}
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-22 w-full" />
-              <Skeleton className="h-22 w-full" />
-              <Skeleton className="h-22 w-full" />
-            </div>
-          ) : (
-
-            <DashboardSection
-              title="My Tasks"
-              action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
-              formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
-            >
-              {Object.entries(tasks)?.map(([bucket, taskList]) => (
-                <div key={bucket}>
-                  {taskList.length > 0 && <h4>{bucket}</h4>}
-                  { taskList.map((task, j) => (
-                    <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} isLast={j === taskList.length - 1} onClick={() => setActiveTab("Tasks")} />
-                  ))}
-                </div>
-              ))}
-            </DashboardSection>
-          )}
+          <DashboardSection
+            title="My Tasks"
+            action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
+            formSlot={activeTab == "Tasks" &&  <CollapsibleForm open={formOpen} onClose={() => setFormOpen(false)} />}
+          >
+            {Object.entries(tasks)?.map(([bucket, taskList]) => (
+              <div key={bucket}>
+                {taskList.length > 0 && <h4>{bucket}</h4>}
+                {taskList.map((task, j) => (
+                  <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} isLast={j === taskList.length - 1} onClick={() => setActiveTab("Tasks")} />
+                ))}
+              </div>
+            ))}
+          </DashboardSection>
     
 
           {/* My Opportunities */}
