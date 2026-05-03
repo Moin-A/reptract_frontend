@@ -65,6 +65,7 @@ const CollapsibleForm = ({ open, onClose, editingTask }: Props) => {
       .then(data => {
         usersCache[activeTab] = data;
         setUsers(data);
+        console.log("Fetched userspo:", data);
       });
   }, [activeTab]);
 
@@ -108,6 +109,7 @@ const CollapsibleForm = ({ open, onClose, editingTask }: Props) => {
         });
         if (!res.ok) throw new Error(await res.text());
         const updated = await res.json();
+        console.log({ updated });
         setTasks(prev => {
           const next = Object.fromEntries(
             Object.entries(prev).map(([b, list]) => [b, list.filter(t => t.id !== editingTask.id)])

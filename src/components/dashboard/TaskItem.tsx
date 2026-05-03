@@ -1,9 +1,16 @@
 import { Check } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 import { C } from "./tokens";
 import { HoverAction } from "./molecules/HoverActions";
 import { useDashboard } from "./DashboardContext";
 
+
+export type TaskUser = {
+  id: number;
+  name: string;
+  email: string;
+};
 
 export type Task = {
   id: number;
@@ -14,6 +21,8 @@ export type Task = {
   badgeColor: string;
   badgeTextColor: string;
   done: boolean;
+  user?: TaskUser | null;
+  assignee?: TaskUser | null;
 };
 
 type TaskItemProps = {
@@ -61,8 +70,21 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, isLast = false, onC
 
       {/* Text */}
       <div style={{ flex: 1, cursor: activeTab !== "Tasks" ? "pointer" : "default", color: activeTab === "Tasks" ? C.ink : C.muted, transition: "color 120ms" }}>
-        <div style={{ fontSize: 13.5, fontWeight: 500, color: nameColor, textDecoration: task.done ? "line-through" : "none" }}>
-          {task.name}
+        <div style={{ fontSize: 13.5, fontWeight: 500, color: nameColor, textDecoration: task.done ? "line-through" : "none", display: "flex", alignItems: "baseline", gap: 5, flexWrap: "wrap" }}>
+          {task.user && (
+            <>
+              <span style={{ fontWeight: 400, color: C.muted }}>From</span>
+              <Link
+                href={`/users/user/${task.user.id}`}
+                onClick={e => e.stopPropagation()}
+                style={{ color: C.accent, fontWeight: 600, textDecoration: "none", flexShrink: 0 }}
+              >
+                {task.user.name}
+              </Link>
+              <span style={{ fontWeight: 400, color: C.muted }}>:</span>
+            </>
+          )}
+          <span>{task.name}</span>
         </div>
         <div style={{ fontSize: 12, color: dueColor, marginTop: 2 }}>{task.due}</div>
       </div>
