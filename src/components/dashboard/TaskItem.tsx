@@ -1,6 +1,5 @@
 import { Check } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
 import { C } from "./tokens";
 import { HoverAction } from "./molecules/HoverActions";
 import { useDashboard } from "./DashboardContext";
@@ -35,7 +34,7 @@ type TaskItemProps = {
 };
 
 export function TaskItem({ task, onToggle, onEdit, onDelete, isLast = false, onClick }: TaskItemProps) {
-  const { activeTab } = useDashboard();
+  const { activeTab, setActiveTab } = useDashboard();
   const [hovered, setHovered] = useState(false);
   const nameColor  = task.overdue && !task.done ? C.err : activeTab !== "Tasks" ? C.accent : C.ink;
   const dueColor   = task.overdue && !task.done ? C.err : C.muted;
@@ -74,13 +73,12 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, isLast = false, onC
           {task.user && (
             <>
               <span style={{ fontWeight: 400, color: C.muted }}>From</span>
-              <Link
-                href={`/users/user/${task.user.id}`}
-                onClick={e => e.stopPropagation()}
-                style={{ color: C.accent, fontWeight: 600, textDecoration: "none", flexShrink: 0 }}
+              <button
+                onClick={e => { e.stopPropagation(); setActiveTab("Teams"); }}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: C.accent, fontWeight: 600, flexShrink: 0, font: "inherit" }}
               >
                 {task.user.name}
-              </Link>
+              </button>
               <span style={{ fontWeight: 400, color: C.muted }}>:</span>
             </>
           )}
