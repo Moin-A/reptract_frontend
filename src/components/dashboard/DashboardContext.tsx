@@ -3,6 +3,14 @@
 import { createContext, useContext, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
 import { type Task } from "./TaskItem";
 
+export interface User {
+  id:         number;
+  name:       string;
+  email:      string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface DashboardContextValue {
   activeTab:      string;
   setActiveTab:   Dispatch<SetStateAction<string>>;
@@ -12,18 +20,21 @@ interface DashboardContextValue {
   setTasks:       Dispatch<SetStateAction<{ [key: string]: Task[] }>>;
   nextId:         number;
   setNextId:      Dispatch<SetStateAction<number>>;
+  users:          User[];
+  setUsers:       Dispatch<SetStateAction<User[]>>;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
 
-export function DashboardProvider({ children, initialTasks = {} }: { children: ReactNode; initialTasks?: { [key: string]: Task[] } }) {
+export function DashboardProvider({ children, initialTasks = {}, initialUsers = [] }: { children: ReactNode; initialTasks?: { [key: string]: Task[] }; initialUsers?: User[] }) {
   const [activeTab, setActiveTab]     = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tasks, setTasks]             = useState<{[key: string]: Task[]}>(initialTasks);
   const [nextId, setNextId]           = useState(Object.values(initialTasks).flat().length + 1);
+  const [users, setUsers]             = useState<User[]>(initialUsers);
 
   return (
-    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId }}>
+    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers }}>
       {children}
     </DashboardContext.Provider>
   );

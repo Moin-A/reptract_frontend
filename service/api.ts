@@ -35,6 +35,21 @@ export async function clientFetch(url: string, options?: RequestInit): Promise<R
   return res;
 }
 
+export async function fetchUsers(): Promise<{ id: number; name: string; email: string; created_at: string; updated_at: string }[]> {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  const api = new ReptrackApi();
+  try {
+    const res = await api.request("/users", {
+      headers: { Cookie: cookieStore.toString() },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 // Server-only: fetch the current user by forwarding session cookies.
 // Call this from Server Components (e.g. layout.tsx).
 export async function getServerUser(): Promise<{ id: number; name: string; email: string } | null> {

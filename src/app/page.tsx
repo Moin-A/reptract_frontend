@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AuthDialog } from "@/components/forms/auth_dialog";
+import { SignInButton } from "@/components/forms/SignInButton";
 import {
   Users,
   TrendingUp,
@@ -17,8 +15,6 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 const features = [
   {
@@ -87,20 +83,9 @@ const testimonials = [
   },
 ];
 
-function SearchParamsHandler({ setIsOpen }: { setIsOpen: (v: boolean) => void }) {
-  const params = useSearchParams();
-  useEffect(() => {
-    setIsOpen(params.get("verified") === "true");
-  }, [params, setIsOpen]);
-  return null;
-}
-
 export default function LandingPage() {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-surface text-foreground">
-      <Suspense fallback={null}><SearchParamsHandler setIsOpen={setIsOpen} /></Suspense>
       {/* Navbar */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
         <div className="mx-auto px-6 flex items-center justify-between" style={{ maxWidth: "var(--page-max-w)", height: "var(--topbar-height)" }}>
@@ -117,7 +102,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
 
-              <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>Sign in</Button>
+              <SignInButton />
 
             <Link href="/login">
               <Button size="sm" className="bg-brand hover:bg-brand-hover text-white">
@@ -328,7 +313,6 @@ export default function LandingPage() {
             <a href="#" className="hover:text-sidebar-text-bright transition-colors">Contact</a>
           </div>
         </div>
-        <AuthDialog isOpen={isOpen} onOpenChange={() => {debugger;setIsOpen(!isOpen)}} />
       </footer>
     </div>
   );

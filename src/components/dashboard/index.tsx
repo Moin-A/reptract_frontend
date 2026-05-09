@@ -8,8 +8,8 @@ import { Task } from "@/components/dashboard/TaskItem";
 import { TaskBucket } from "@/components/dashboard/TaskBucket";
 import { OpportunityItem }     from "@/components/dashboard/OpportunityItem";
 import { AccountItem }         from "@/components/dashboard/AccountItem";
-import { ActivityItem }        from "@/components/dashboard/ActivityItem";
-import { ExportBar }           from "@/components/dashboard/ExportBar";
+import dynamic from "next/dynamic";
+const ActivityPanel = dynamic(() => import("@/components/dashboard/ActivityPanel"));
 import { GhostButton }         from "@/components/dashboard/PageHeader";
 import { useDashboard }        from "@/components/dashboard/DashboardContext";
 import CollapsibleForm from "./CollapsibleForm";
@@ -28,12 +28,6 @@ const ACCOUNTS = [
   { initials: "FF", avatarColor: "#E0A82E", name: "Forge Fitness",  sub: "Portland, OR · 2 locations", status: "Trial",  statusVariant: "new"    as const },
 ];
 
-const ACTIVITY = [
-  { initials: "PK", avatarColor: "#7C3AED", timestamp: "Today at 10:14 AM",   text: <><b>Priya Kumar</b> moved <a href="#" style={{ color: C.accent }}>Pro tier upgrade</a> to Negotiation</> },
-  { initials: "SR", avatarColor: "#1F9D55", timestamp: "Today at 8:52 AM",    text: <><b>Sam Rivera</b> signed up — <a href="#" style={{ color: C.accent }}>Forge Fitness</a></> },
-  { initials: "MK", avatarColor: "#2F6FEB", timestamp: "Yesterday at 4:31 PM", text: <><b>Marco Kent</b> opened the proposal email for <a href="#" style={{ color: C.accent }}>Multi-location plan</a></> },
-  { initials: "AD", avatarColor: "#D84A3F", timestamp: "Yesterday at 2:10 PM", text: <><b>Admin</b> added a note to <a href="#" style={{ color: C.accent }}>Iron Union</a></> },
-];
 
 // ── component ────────────────────────────────────────────────────
 
@@ -41,7 +35,6 @@ const Dashboard = () => {
   const [formOpen, setFormOpen] = useState(false);
   const { tasks, setTasks, activeTab, setActiveTab } = useDashboard();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-
   useEffect(() => {
     fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
       const data: { buckets: { [key: string]: Task[] } } = await res.json();
@@ -72,7 +65,7 @@ const Dashboard = () => {
     setFormOpen(true);
   };
 
-return (
+  return (
     <>
           {/* KPI strip */}
           <StatsGrid stats={STATS} />
@@ -111,14 +104,7 @@ return (
           </DashboardSection>
 
           {/* Recent Activity */}
-          <DashboardSection
-            title="Recent Activity"
-            footer={<ExportBar />}
-          >
-            {ACTIVITY.map((item, i) => (
-              <ActivityItem key={i} {...item} isLast={i === ACTIVITY.length - 1} />
-            ))}
-          </DashboardSection>
+          <ActivityPanel />
 
           {/* Footer */}
           <footer style={{ textAlign: "center", padding: 24, fontSize: 11.5, color: C.muted2, borderTop: `1px solid ${C.line}`, marginTop: 8 }}>

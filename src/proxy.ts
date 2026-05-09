@@ -12,7 +12,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  console.log("called")
   try {
       const initialUser = await getServerUser();
       if (!initialUser) {
@@ -21,7 +20,6 @@ export async function proxy(request: NextRequest) {
   } catch {
     return NextResponse.redirect(new URL("/", request.url));
   }
-
   return NextResponse.next();
 }
 
