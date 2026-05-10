@@ -91,13 +91,18 @@ const ActivityPanel = memo(function ActivityPanel() {
   const [when, setWhen] = useState(0);
 
   useEffect(() => {
-    fetch("/api/activities", { credentials: "include" })
+    const params = new URLSearchParams();
+    params.set("activity[show]", SHOW_OPTIONS[show]);
+    params.set("activity[when]", WHEN_OPTIONS[when]);
+    if (by) params.set("activity[by]", by);
+
+    fetch(`/api/activities?${params}`, { credentials: "include" })
       .then(res => res.json())
       .then((data: { groups: RawActivity[] }) => {
         if (Array.isArray(data.groups)) setGroups(toGroups(data.groups));
       })
       .catch(() => {});
-  }, []);
+  }, [show, by, when]);
 
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>

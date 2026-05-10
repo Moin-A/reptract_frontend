@@ -3,12 +3,11 @@ import { cookies } from "next/headers";
 
 export async function GET(req: Request) {
     const cookieStore = await cookies();
-    const body = await req.json().catch(() => null);
     const api = new ReptrackApi();
+    const { search } = new URL(req.url);
 
-    const response = await api.request('/activities', {
+    const response = await api.request(`/activities${search}`, {
         method: 'GET',
-        body: body ? JSON.stringify(body) : undefined,
         headers: { Cookie: cookieStore.toString() },
     });
 
