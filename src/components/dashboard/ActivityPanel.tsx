@@ -102,7 +102,7 @@ const ActivityPanel = memo(function ActivityPanel() {
         if (Array.isArray(data.groups)) setGroups(toGroups(data.groups));
       })
       .catch(() => {});
-  }, [show, by, when]);
+  }, [show, by, when, tasks]);
 
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
