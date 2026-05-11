@@ -50,17 +50,8 @@ const TONE_ICONS: Record<IconTone, React.ReactNode> = {
   ),
 };
 
-export type ActivityEntry = {
-  tone: IconTone;
-  actor: string;
-  action: string;
-  object?: string;
-  objectHref?: string;
-  suffix?: string;
-  metaTag?: string;
-  metaExtra?: string;
-  time: string;
-};
+import { type ActivityEntry } from "@/lib/types";
+export type { ActivityEntry };
 
 export function ActivityItem({ tone, actor, action, object, objectHref, suffix, metaTag, metaExtra, time }: ActivityEntry) {
   const ts = TONE_STYLES[tone];

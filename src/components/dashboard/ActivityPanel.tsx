@@ -3,11 +3,9 @@ import { useState, useEffect, memo } from "react";
 import { C } from "./tokens";
 import { ActivityItem, type ActivityEntry } from "./ActivityItem";
 import { useDashboard } from "./DashboardContext";
+import { type DayGroup } from "@/lib/types";
 
-export type DayGroup = {
-  label: string;
-  entries: ActivityEntry[];
-};
+export type { DayGroup };
 
 type Whodunnit = {
   id: number;

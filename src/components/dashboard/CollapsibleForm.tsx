@@ -3,7 +3,9 @@ import { useRef, useState, useEffect } from "react";
 import { Collapsible, CollapsibleContent } from "../ui/collapsible";
 import { C } from "@/components/dashboard/tokens";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
-import { type Task } from "./TaskItem";
+import { type Task, type User } from "@/lib/types";
+
+export type { User };
 
 const usersCache: Record<string, User[]> = {};
 
@@ -11,14 +13,6 @@ interface Props {
   open: boolean;
   onClose: () => void;
   editingTask?: Task | null;
-}
-
-export interface User {
-  id: number;
-  email: string;
-  created_at: string;
-  updated_at: string;
-  name: string;
 }
 
 const selectStyle: React.CSSProperties = {

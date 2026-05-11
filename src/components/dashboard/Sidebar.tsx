@@ -5,6 +5,7 @@ import { List, Plus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { C } from "./tokens";
 import { useDashboard } from "./DashboardContext";
+import { STAGES } from "./opportunities/stages";
 
 type RecentItemDef = { type: string; name: string };
 
@@ -73,11 +74,17 @@ export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: Recent
           </div>
         )}
 
-        { activeTab == "Tasks" &&
-        <SidebarSection heading="Tasks" divider>
-          <TaskStatusSection />
-        </SidebarSection>
-        }
+        {activeTab === "Tasks" && (
+          <SidebarSection heading="Tasks" divider>
+            <TaskStatusSection />
+          </SidebarSection>
+        )}
+
+        {activeTab === "Opportunities" && (
+          <SidebarSection heading="Opportunity Stages" divider>
+            <OpportunityStagesSection />
+          </SidebarSection>
+        )}
 
 
 
@@ -227,6 +234,53 @@ function RecentItem({ type, name }: RecentItemDef) {
     <div style={{ padding: "8px 10px", borderRadius: 8 }}>
       <div style={{ fontSize: 12, color: C.muted2 }}>{type}</div>
       <div style={{ fontSize: 13, color: C.ink, fontWeight: 500 }}>{name}</div>
+    </div>
+  );
+}
+
+function OpportunityStagesSection() {
+  const { oppStageFilter, setOppStageFilter } = useDashboard();
+
+  function toggle(key: string) {
+    setOppStageFilter(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  }
+
+  const total = STAGES.reduce((sum, s) => sum + s.count, 0);
+  const pipeline = STAGES.reduce((sum, s) => sum + s.count * 5000, 0);
+
+  return (
+    <div>
+      {STAGES.map(s => {
+        const active = oppStageFilter.includes(s.key);
+        return (
+          <div key={s.key} onClick={() => toggle(s.key)}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 2px", fontSize: 13, cursor: "pointer", borderRadius: 6, transition: "background 120ms" }}
+            onMouseEnter={e => { e.currentTarget.style.background = C.line; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+              <div style={{ width: 14, height: 14, borderRadius: 3, border: `1.5px solid ${active ? C.accent : C.ink2}`, background: active ? C.accent : "transparent", display: "grid", placeItems: "center", flexShrink: 0, transition: "background 120ms, border-color 120ms" }}>
+                {active && (
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round">
+                    <path d="m5 12 4.5 4.5L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span style={{ width: 8, height: 8, borderRadius: 8, background: s.color, flexShrink: 0 }} />
+              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.label}</span>
+            </div>
+            <span style={{ fontSize: 12, color: C.muted2, background: "white", border: `1px solid ${C.line}`, borderRadius: 100, padding: "1px 8px", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{s.count}</span>
+          </div>
+        );
+      })}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 10, borderTop: `1px solid ${C.line}`, marginTop: 8 }}>
+        <span style={{ fontSize: 12, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</span>
+        <span style={{ fontSize: 18, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{total}</span>
+      </div>
+      <div style={{ fontSize: 11.5, color: C.ok, marginTop: 2, textAlign: "right" }}>
+        Pipeline value: ${(pipeline / 1000).toFixed(0)}K
+      </div>
     </div>
   );
 }

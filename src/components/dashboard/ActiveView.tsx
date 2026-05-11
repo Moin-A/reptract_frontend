@@ -4,6 +4,7 @@ import { useDashboard } from "./DashboardContext";
 import { PageHeader } from "./PageHeader";
 import Dashboard from "./index";
 import CampaignDashboard from "./CampaignDashboard";
+import { OpportunitiesView } from "./opportunities";
 
 const TAB_TITLES: Record<string, string> = {
   Dashboard:     "Dashboards",
@@ -25,9 +26,10 @@ export function ActiveView() {
         title={TAB_TITLES[activeTab] ?? activeTab}
         subtitle="Monday, 21 April 2026 · Good morning, Admin."
       />
-      {activeTab === "Dashboard" && <Dashboard />}
-      {activeTab === "Campaigns" && <CampaignDashboard />}
-      {activeTab === "Tasks" && <Dashboard />}
+      {activeTab === "Dashboard"     && <Dashboard />}
+      {activeTab === "Campaigns"     && <CampaignDashboard />}
+      {activeTab === "Tasks"         && <Dashboard />}
+      {activeTab === "Opportunities" && <OpportunitiesView />}
     </main>
   );
 }

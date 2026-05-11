@@ -5,24 +5,8 @@ import { HoverAction } from "./molecules/HoverActions";
 import { useDashboard } from "./DashboardContext";
 
 
-export type TaskUser = {
-  id: number;
-  name: string;
-  email: string;
-};
-
-export type Task = {
-  id: number;
-  name: string;
-  due: string;
-  overdue: boolean;
-  badge: string;
-  badgeColor: string;
-  badgeTextColor: string;
-  done: boolean;
-  user?: TaskUser | null;
-  assignee?: TaskUser | null;
-};
+import { type Task, type TaskUser } from "@/lib/types";
+export type { Task, TaskUser };
 
 type TaskItemProps = {
   task: Task;
