@@ -84,7 +84,7 @@ const selectStyle: React.CSSProperties = {
 };
 
 const ActivityPanel = memo(function ActivityPanel() {
-  const { users } = useDashboard();
+  const { users, tasks } = useDashboard();
   const [groups, setGroups] = useState<DayGroup[]>([]);
   const [show, setShow] = useState(0);
   const [by,   setBy]   = useState("")
