@@ -27,7 +27,7 @@ type RawActivity = {
   whodunnit: Whodunnit;
   event: string;
   item_id: number;
-  entity: Entity;
+  entity: Entity | null;
   entity_type: string;
 };
 
@@ -47,6 +47,7 @@ function toGroups(activities: RawActivity[]): DayGroup[] {
   const buckets = new Map<string, DayGroup>();
 
   for (const a of activities) {
+    if (!a.entity) continue;
     const date = new Date(a.entity.updated_at);
     const key  = date.toDateString();
 
