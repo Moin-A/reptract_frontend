@@ -1,4 +1,4 @@
-import { STATUS_STYLES, type StatusVariant } from "@/components/dashboard/tokens";
+import { STATUS_STYLES, type StatusVariant } from "@/components/organisms/dashboard/tokens";
 
 type StatusBadgeProps = {
   variant: StatusVariant;

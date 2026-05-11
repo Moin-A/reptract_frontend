@@ -1,4 +1,5 @@
-import type { StageKey } from "@/components/dashboard/opportunities/stages";
+import type { StageKey } from "@/components/organisms/dashboard/opportunities/stages";
+import type { AccountCategoryKey } from "@/components/organisms/dashboard/accounts/categories";
 
 // ── User ──────────────────────────────────────────────────────────
 export interface User {
@@ -27,6 +28,18 @@ export type Task = {
   done:          boolean;
   user?:         TaskUser | null;
   assignee?:     TaskUser | null;
+};
+
+// ── Account ───────────────────────────────────────────────────────
+export type Account = {
+  id:       number;
+  name:     string;
+  cat:      AccountCategoryKey;
+  user:     string;
+  daysAgo:  number;
+  contacts: number;
+  opps:     number;
+  rating:   number;
 };
 
 // ── Opportunity ───────────────────────────────────────────────────

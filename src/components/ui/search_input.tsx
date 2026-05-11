@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { C } from "@/components/dashboard/tokens";
+import { C } from "@/components/organisms/dashboard/tokens";
 
 type SearchInputProps = {
   placeholder?: string;

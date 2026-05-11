@@ -1,8 +1,8 @@
-import { C } from "@/components/dashboard/tokens";
-import { DashboardProvider } from "@/components/dashboard/DashboardContext";
-import { TopNav }    from "@/components/dashboard/TopNav";
-import { Sidebar }   from "@/components/dashboard/Sidebar";
-import { ActiveView } from "@/components/dashboard/ActiveView";
+import { C } from "@/components/organisms/dashboard/tokens";
+import { DashboardProvider } from "@/components/organisms/dashboard/DashboardContext";
+import { TopNav }    from "@/components/organisms/dashboard/TopNav";
+import { Sidebar }   from "@/components/organisms/dashboard/Sidebar";
+import { ActiveView } from "@/components/organisms/dashboard/ActiveView";
 import { fetchUsers } from "../../../service/api";
 
 export default async function DashboardPage() {

@@ -1,4 +1,4 @@
-import { type Task } from "@/components/dashboard/TaskItem";
+import { type Task } from "@/components/molecules/TaskItem";
 
 const MOCK_TASKS: Task[] = [
   { id: 1, name: "My first Task",        due: "6 days late — was due Apr 16 at 12:00 AM", overdue: true,  badge: "Lunch",   badgeColor: "#6AAF5E", badgeTextColor: "white", done: false },
