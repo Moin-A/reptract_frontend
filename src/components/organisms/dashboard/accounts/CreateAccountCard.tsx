@@ -93,13 +93,32 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated }: Prop
     });
   }
 
-  function submit() {
+  async function submit() {
     if (!fName.trim()) { setFNameError(true); return; }
     setFNameError(false);
-    onAccountCreated({
-      id: Date.now(), name: fName.trim(), cat: fCategory,
-      user: fAssigned || "Unassigned", daysAgo: 0, contacts: 0, opps: 0, rating: fRating,
+
+    const res = await fetch("/api/accounts", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        name:        fName.trim(),
+        category:    fCategory,
+        user:        fAssigned || "Unassigned",
+        rating:      fRating,
+        tags:        fTags,
+        phone:       fPhone,
+        tollfree:    fTollfree,
+        fax:         fFax,
+        email:       fEmail,
+        website:     fWebsite,
+      }),
     });
+
+    if (!res.ok) return;
+
+    const acct: Account = await res.json();
+    onAccountCreated(acct);
     setFSuccess(true);
     setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); }, 1200);
   }

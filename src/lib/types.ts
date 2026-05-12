@@ -34,7 +34,7 @@ export type Task = {
 export type Account = {
   id:       number;
   name:     string;
-  cat:      AccountCategoryKey;
+  category: AccountCategoryKey;
   user:     string;
   daysAgo:  number;
   contacts: number;

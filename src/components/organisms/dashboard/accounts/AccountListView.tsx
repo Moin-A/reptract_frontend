@@ -26,7 +26,7 @@ export function AccountListView({ accounts, onDelete }: Props) {
   return (
     <div>
       {accounts.map(a => {
-        const cat = CAT_MAP[a.cat];
+        const cat = CAT_MAP[a.category] ?? CAT_MAP["other"];
         const isHovered = hoveredId === a.id;
         return (
           <div key={a.id}

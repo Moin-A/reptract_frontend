@@ -21,7 +21,7 @@ export function AccountGridView({ accounts }: Props) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, padding: 20, background: "#FAFAF7" }}>
       {accounts.map(a => {
-        const cat = CAT_MAP[a.cat];
+        const cat = CAT_MAP[a.category] ?? CAT_MAP["other"];
         return (
           <div key={a.id}
             style={{ background: "white", border: `1px solid ${C.line}`, borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 10, cursor: "pointer", transition: "transform 120ms, border-color 120ms" }}
