@@ -1,9 +1,8 @@
 "use client";
+import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
 import { SelectWrap } from "./SelectWrap";
 import { baseSelect } from "./formStyles";
 import { focusInput, blurInput } from "./formHelpers";
-
-const ASSIGNEES = ["Admin (me)", "Marco Kent", "Priya Kumar", "Sam Rivera", "Aaron Assembler", "Cindy Cluster"];
 
 type Props = {
   value:    string;
@@ -11,11 +10,12 @@ type Props = {
 };
 
 export function AssigneeSelect({ value, onChange }: Props) {
+  const { users } = useDashboard();
   return (
     <SelectWrap>
       <select value={value} onChange={e => onChange(e.target.value)} onFocus={focusInput} onBlur={blurInput} style={baseSelect}>
         <option value="">Unassigned</option>
-        {ASSIGNEES.map(a => <option key={a}>{a}</option>)}
+        {users.map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
       </select>
     </SelectWrap>
   );
