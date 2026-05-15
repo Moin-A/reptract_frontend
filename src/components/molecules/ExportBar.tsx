@@ -1,4 +1,4 @@
-import { C } from "@/components/organisms/dashboard/tokens";
+import { ExportItem } from "@/components/atoms/ExportItem";
 
 type ExportBarProps = {
   formats?: string[];
@@ -11,17 +11,7 @@ export function ExportBar({ formats = DEFAULT_FORMATS, onExport }: ExportBarProp
   return (
     <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", fontSize: 12 }}>
       {formats.map((fmt, i) => (
-        <span
-          key={fmt}
-          onClick={() => onExport?.(fmt)}
-          style={{
-            color: C.muted, fontWeight: 500, cursor: "pointer",
-            padding: i === 0 ? "0 8px 0 0" : "0 8px",
-            borderRight: i < formats.length - 1 ? `1px solid ${C.line}` : "none",
-          }}
-        >
-          {fmt}
-        </span>
+        <ExportItem key={fmt} label={fmt} first={i === 0} last={i === formats.length - 1} onClick={() => onExport?.(fmt)} />
       ))}
     </div>
   );

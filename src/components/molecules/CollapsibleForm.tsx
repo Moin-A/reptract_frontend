@@ -38,7 +38,6 @@ function ChevronDown() {
 
 const CollapsibleForm = ({ open, onClose, editingTask }: Props) => {
   const { tasks, activeTab, setTasks } = useDashboard();
-  console.log({editingTask, tasks})
   const isEditing = !!editingTask;
   const editingBucket = editingTask
     ? Object.entries(tasks).find(([, list]) => list.some(t => t.id === editingTask.id))?.[0]
@@ -59,7 +58,6 @@ const CollapsibleForm = ({ open, onClose, editingTask }: Props) => {
       .then(data => {
         usersCache[activeTab] = data;
         setUsers(data);
-        console.log("Fetched userspo:", data);
       });
   }, [activeTab]);
 
@@ -102,7 +100,6 @@ const CollapsibleForm = ({ open, onClose, editingTask }: Props) => {
         });
         if (!res.ok) throw new Error(await res.text());
         const updated = await res.json();
-        console.log({ updated });
         setTasks(prev => {
           const next = Object.fromEntries(
             Object.entries(prev).map(([b, list]) => [b, list.filter(t => t.id !== editingTask.id)])

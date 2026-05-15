@@ -93,7 +93,6 @@ function useAuthForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        console.log(data)
         setServerError({
           title: "We couldn't sign you in",
           body: data?.errors ? data.errors.join(", ") : data?.error ?? 'An unknown error occurred. Please try again.',
@@ -103,8 +102,7 @@ function useAuthForm() {
       }
       setSubmitting(false);
       setSucceeded(true);
-    } catch (err) {
-      console.log(err)
+    } catch {
       setServerError({ title: "We couldn't sign you in", body: 'Network error. Please check your connection.' });
       setSubmitting(false);
     }

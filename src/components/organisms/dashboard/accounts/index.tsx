@@ -26,8 +26,6 @@ export function AccountsView() {
       
   }, []);
 
-  console.log({"accountss": accounts})
-
   const filtered = accounts.filter(a => {
     const inCat = !a.category || acctCatFilter.includes(a.category);
     const q = search.toLowerCase();
@@ -79,6 +77,10 @@ export function AccountsView() {
         {view === "list" && (
           <AccountListView
             accounts={filtered}
+            onEdit={() => {
+              // TODO: implement edit flow
+            }}
+            
             onDelete={id => deleteOpp(id, setAccounts, "Delete this account?")}
           />
         )}

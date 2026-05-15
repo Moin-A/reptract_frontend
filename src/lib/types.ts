@@ -32,14 +32,17 @@ export type Task = {
 
 // ── Account ───────────────────────────────────────────────────────
 export type Account = {
-  id:       number;
-  name:     string;
-  category: AccountCategoryKey;
-  user:     string;
-  daysAgo:  number;
-  contacts: number;
-  opps:     number;
-  rating:   number;
+  id:          number;
+  name:        string;
+  category:    AccountCategoryKey;
+  user:        string;
+  daysAgo:     number;
+  contacts:    number;
+  opps:        number;
+  rating:      number;
+  email?:      string;
+  phone?:      string;
+  assigned_to?: string | null;
 };
 
 // ── Opportunity ───────────────────────────────────────────────────
@@ -52,6 +55,29 @@ export type Opp = {
   prob:    number;
   user:    string;
   daysAgo: number;
+};
+
+// ── Activity (raw API) ────────────────────────────────────────────
+export type Whodunnit = {
+  id:    number;
+  name:  string;
+  email: string;
+};
+
+export type ActivityEntity = {
+  id:         number;
+  name?:      string;
+  updated_at: string;
+  [key: string]: unknown;
+};
+
+export type RawActivity = {
+  id:          number;
+  whodunnit:   Whodunnit;
+  event:       string;
+  item_id:     number;
+  entity:      ActivityEntity | null;
+  entity_type: string;
 };
 
 // ── Activity ──────────────────────────────────────────────────────
