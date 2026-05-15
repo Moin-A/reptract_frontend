@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { CATEGORIES, type AccountCategoryKey } from "./categories";
@@ -13,11 +13,15 @@ import { fieldLabel, baseInput, baseSelect } from "@/components/atoms/formStyles
 import { TagsInput } from "@/components/atoms/TagsInput";
 import { AssigneeSelect } from "@/components/atoms/AssigneeSelect";
 import { StarRating } from "@/components/atoms/StarRating";
+import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
 
 type Props = {
-  view:            "list" | "grid";
-  onViewChange:    (v: "list" | "grid") => void;
-  onAccountCreated: (acct: Account) => void;
+  view:              "list" | "grid";
+  onViewChange:      (v: "list" | "grid") => void;
+  onAccountCreated:  (acct: Account) => void;
+  onAccountUpdated?: (acct: Account) => void;
+  editAccount?:      Account | null;
+  onEditCancel?:     () => void;
 };
 
 const COUNTRIES = ["United States", "Canada", "United Kingdom", "Australia"];
@@ -55,7 +59,7 @@ function AddressGroup({ title, icon, ids, disabled, onInput }: {
   );
 }
 
-export function CreateAccountCard({ view, onViewChange, onAccountCreated }: Props) {
+export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAccountUpdated, editAccount, onEditCancel }: Props) {
   const [formOpen,   setFormOpen]   = useState(false);
   const [fName,      setFName]      = useState("");
   const [fCategory,  setFCategory]  = useState<AccountCategoryKey>("other");
@@ -68,14 +72,26 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated }: Prop
   const [fEmail,     setFEmail]     = useState("");
   const [fWebsite,   setFWebsite]   = useState("");
   const [sameAsBill, setSameAsBill] = useState(true);
-  const [fNameError, setFNameError] = useState(false);
-  const [fSuccess,   setFSuccess]   = useState(false);
+  const [fNameError,   setFNameError]   = useState(false);
+  const [fSuccess,     setFSuccess]     = useState(false);
+  const [serverError,  setServerError]  = useState<FormError | null>(null);
+
+  useEffect(() => {
+    if (!editAccount) return;
+    setFName(editAccount.name);
+    setFCategory((editAccount.category as AccountCategoryKey) ?? "other");
+    setFAssigned(editAccount.assigned_to ?? "");
+    setFRating(editAccount.rating ?? 0);
+    setFPhone(editAccount.phone ?? "");
+    setFEmail(editAccount.email ?? "");
+    setFormOpen(true);
+  }, [editAccount]);
 
   function reset() {
     setFName(""); setFCategory("other"); setFAssigned(""); setFRating(0);
     setFTags([]); setFPhone(""); setFTollfree(""); setFFax("");
     setFEmail(""); setFWebsite(""); setSameAsBill(true);
-    setFNameError(false); setFSuccess(false);
+    setFNameError(false); setFSuccess(false); setServerError(null);
     ["b-street1","b-street2","b-city","b-state","b-zip","b-country",
      "s-street1","s-street2","s-city","s-state","s-zip","s-country"].forEach(id => {
       const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
@@ -93,34 +109,56 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated }: Prop
     });
   }
 
+  const body = {
+    name:     fName.trim(),
+    category: fCategory,
+    assigned_to: fAssigned || null,
+    rating:   fRating,
+    tags:     fTags,
+    phone:    fPhone,
+    tollfree: fTollfree,
+    fax:      fFax,
+    email:    fEmail,
+    website:  fWebsite,
+  };
+
   async function submit() {
     if (!fName.trim()) { setFNameError(true); return; }
     setFNameError(false);
+    setServerError(null);
 
-    const res = await fetch("/api/accounts", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        name:        fName.trim(),
-        category:    fCategory,
-        user:        fAssigned || "Unassigned",
-        rating:      fRating,
-        tags:        fTags,
-        phone:       fPhone,
-        tollfree:    fTollfree,
-        fax:         fFax,
-        email:       fEmail,
-        website:     fWebsite,
-      }),
-    });
+    if (editAccount) {
+      const res  = await fetch(`/api/accounts/${editAccount.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msgs: string[] = data?.errors ?? [];
+        setServerError({ title: "Couldn't save changes", body: msgs.length ? msgs.join(", ") : "The server returned an error. Try again in a few seconds." });
+        return;
+      }
+      onAccountUpdated?.(data as Account);
+    } else {
+      const res  = await fetch("/api/accounts", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msgs: string[] = data?.errors ?? [];
+        setServerError({ title: "Couldn't create account", body: msgs.length ? msgs.join(", ") : "The server returned an error. Try again in a few seconds." });
+        return;
+      }
+      onAccountCreated(data as Account);
+    }
 
-    if (!res.ok) return;
-
-    const acct: Account = await res.json();
-    onAccountCreated(acct);
     setFSuccess(true);
-    setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); }, 1200);
+    setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); onEditCancel?.(); }, 1200);
   }
 
   const billIds = { street1: "b-street1", street2: "b-street2", city: "b-city", state: "b-state", zip: "b-zip", country: "b-country" };
@@ -141,14 +179,14 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated }: Prop
       </div>
       <button onClick={() => { setFormOpen(o => !o); if (!formOpen) reset(); }}
         style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, background: C.accent, color: "white", border: `1px solid ${C.accent}`, cursor: "pointer" }}>
-        <Plus size={14} /> Create Account
+        <Plus size={14} /> Create Accounts
       </button>
     </div>
   );
 
   return (
     <CreateCardShell
-      title="Create Account"
+      title={editAccount ? "Edit Account" : "Create Account"}
       formOpen={formOpen}
       onFormOpenChange={setFormOpen}
       headerRight={headerRight}
@@ -292,10 +330,18 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated }: Prop
         </p>
       </CollapsibleSection>
 
+      <div style={{ padding: "0 24px" }}>
+        <FormErrorBanner
+          error={serverError}
+          onDismiss={() => setServerError(null)}
+          onRetry={submit}
+        />
+      </div>
+
       <FormFooter
-        label="Account"
+        label={editAccount ? "Save Changes" : "Account"}
         onSubmit={submit}
-        onCancel={() => { setFormOpen(false); reset(); }}
+        onCancel={() => { setFormOpen(false); reset(); onEditCancel?.(); }}
         success={fSuccess}
       />
     </CreateCardShell>

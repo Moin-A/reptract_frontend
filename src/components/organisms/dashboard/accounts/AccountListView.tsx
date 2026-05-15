@@ -10,9 +10,10 @@ import { HoverAction } from "@/components/molecules/HoverActions";
 type Props = {
   accounts: Account[];
   onDelete: (id: number) => void;
+  onEdit:   (id: number) => void;
 };
 
-export function AccountListView({ accounts, onDelete }: Props) {
+export function AccountListView({ accounts, onDelete, onEdit }: Props) {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   if (accounts.length === 0) {
@@ -49,7 +50,7 @@ export function AccountListView({ accounts, onDelete }: Props) {
                 </div>
               ))}
             </div>
-            <HoverAction hovered={isHovered} onDelete={() => onDelete(a.id)} task={a} />
+            <HoverAction hovered={isHovered} onEdit={() => onEdit(a.id)} onDelete={() => onDelete(a.id)} task={a} />
           </div>
         );
       })}

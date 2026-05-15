@@ -1,18 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
-import {  Plus } from "lucide-react";
+
 import { C }                  from "@/components/organisms/dashboard/tokens";
 import { StatsGrid, type StatDef } from "@/components/molecules/StatsGrid";
 import { DashboardSection }    from "@/components/molecules/DashboardSection";
-import { Task } from "@/components/molecules/TaskItem";
-import { TaskBucket } from "@/components/molecules/TaskBucket";
 import { OpportunityItem }     from "@/components/organisms/dashboard/opportunities/OpportunityItem";
 import { AccountItem }         from "@/components/organisms/dashboard/accounts/AccountItem";
-import dynamic from "next/dynamic";
-const ActivityPanel = dynamic(() => import("@/components/organisms/dashboard/activities/ActivityPanel"));
 import { GhostButton }         from "@/components/molecules/PageHeader";
-import { useDashboard }        from "@/components/organisms/dashboard/DashboardContext";
-import CollapsibleForm from "@/components/molecules/CollapsibleForm";
+import { DashboardTasks }      from "@/components/organisms/dashboard/DashboardTasks";
+import dynamic from "next/dynamic";
+import { Plus } from "lucide-react";
+
+const ActivityPanel = dynamic(() => import("@/components/organisms/dashboard/activities/ActivityPanel"));
 
 const STATS: StatDef[] = [];
 
@@ -28,91 +26,36 @@ const ACCOUNTS = [
   { initials: "FF", avatarColor: "#E0A82E", name: "Forge Fitness",  sub: "Portland, OR · 2 locations", status: "Trial",  statusVariant: "new"    as const },
 ];
 
+const Dashboard = () => (
+  <>
+    <StatsGrid stats={STATS} />
 
-// ── component ────────────────────────────────────────────────────
+    <DashboardTasks />
 
-const Dashboard = () => {
-  const [formOpen, setFormOpen] = useState(false);
-  const { tasks, setTasks, activeTab, setActiveTab } = useDashboard();
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  useEffect(() => {
-    fetch("/api/tasks", { credentials: "include" }).then(async (res: Response) => {
-      const data: { buckets: { [key: string]: Task[] } } = await res.json();
-      setTasks(data.buckets);
-    });
-  }, []);
+    <DashboardSection
+      title="My Opportunities"
+      action={<GhostButton icon={<Plus size={14} />} label="Add opportunity" />}
+    >
+      {OPPORTUNITIES.map((opp, i) => (
+        <OpportunityItem key={opp.name} {...opp} isLast={i === OPPORTUNITIES.length - 1} />
+      ))}
+    </DashboardSection>
 
-  function toggleTask(id: number) {
-    setTasks(prev => Object.entries(prev).reduce((acc, [bucket, taskList]) => {
-      acc[bucket] = taskList.map(t => t.id === id ? { ...t, done: !t.done } : t);
-      return acc;
-    }, {} as { [key: string]: Task[] }));
-  }
+    <DashboardSection
+      title="My Accounts"
+      action={<GhostButton icon={<Plus size={14} />} label="Add account" />}
+    >
+      {ACCOUNTS.map((acc, i) => (
+        <AccountItem key={acc.name} {...acc} isLast={i === ACCOUNTS.length - 1} />
+      ))}
+    </DashboardSection>
 
-  async function deleteTask(id: number) {
-    setTasks(prev => Object.entries(prev).reduce((acc, [bucket, taskList]) => {
-      acc[bucket] = taskList.filter(t => t.id !== id);
-      return acc;
-    }, {} as { [key: string]: Task[] }));
-    await fetch(`/api/tasks/${id}`, { method: "DELETE", credentials: "include" });
-  }
+    <ActivityPanel />
 
-  const handleEdit = (id: number) => {
-    console.log("Editing task:", id);
-    const task = Object.values(tasks).flat().find(t => t.id === id);
-    if (!task) return;
-    setEditingTask(task);
-    setFormOpen(true);
-  };
-
-  return (
-    <>
-          {/* KPI strip */}
-          <StatsGrid stats={STATS} />
-          
-
-          {/* My Tasks */}
-          <DashboardSection
-            title="My Tasks"
-            action={activeTab == "Tasks" && <GhostButton icon={<Plus size={14} />} label="Add task" onClick={() => setFormOpen(true)} />}
-            formSlot={activeTab == "Tasks" && <CollapsibleForm open={formOpen} editingTask={editingTask} onClose={() => { setFormOpen(false); setEditingTask(null); }} />}
-          >
-            {Object.entries(tasks)?.map(([bucket, taskList]) => (
-              <TaskBucket key={bucket} bucket={bucket} onEdit={handleEdit} taskList={taskList} onToggle={toggleTask} onDelete={deleteTask} onTaskClick={() => setActiveTab("Tasks")} />
-            ))}
-          </DashboardSection>
-    
-
-          {/* My Opportunities */}
-          <DashboardSection
-            title="My Opportunities"
-            action={<GhostButton icon={<Plus size={14} />} label="Add opportunity" />}
-          >
-            {OPPORTUNITIES.map((opp, i) => (
-              <OpportunityItem key={opp.name} {...opp} isLast={i === OPPORTUNITIES.length - 1} />
-            ))}
-          </DashboardSection>
-
-          {/* My Accounts */}
-          <DashboardSection
-            title="My Accounts"
-            action={<GhostButton icon={<Plus size={14} />} label="Add account" />}
-          >
-            {ACCOUNTS.map((acc, i) => (
-              <AccountItem key={acc.name} {...acc} isLast={i === ACCOUNTS.length - 1} />
-            ))}
-          </DashboardSection>
-
-          {/* Recent Activity */}
-          <ActivityPanel />
-
-          {/* Footer */}
-          <footer style={{ textAlign: "center", padding: 24, fontSize: 11.5, color: C.muted2, borderTop: `1px solid ${C.line}`, marginTop: 8 }}>
-            Powered by <a href="#" style={{ color: C.accent, fontWeight: 500 }}>RepTrack</a> v1.0 · © 2026
-          </footer>
-
-    </>   
-  );
-};
+    <footer style={{ textAlign: "center", padding: 24, fontSize: 11.5, color: C.muted2, borderTop: `1px solid ${C.line}`, marginTop: 8 }}>
+      Powered by <a href="#" style={{ color: C.accent, fontWeight: 500 }}>RepTrack</a> v1.0 · © 2026
+    </footer>
+  </>
+);
 
 export default Dashboard;
