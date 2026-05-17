@@ -4,7 +4,9 @@ import { C } from "@/components/organisms/dashboard/tokens";
 import { HoverAction } from "./HoverActions";
 import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
 
+
 import { type Task, type TaskUser } from "@/lib/types";
+import { to_local_date_string } from "@/lib/activities";
 export type { Task, TaskUser };
 
 type TaskItemProps = {
@@ -64,6 +66,11 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, isLast = false, onC
             </>
           )}
           <span>{task.name}</span>
+          {task.due_date && (
+            <> 
+            <span><span style={{ color: C.muted }}>due on: {to_local_date_string(new Date(task?.due_date))}</span></span>
+            </>
+          )}
         </div>
         <div style={{ fontSize: 12, color: dueColor, marginTop: 2 }}>{task.due}</div>
       </div>

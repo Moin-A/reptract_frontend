@@ -51,20 +51,20 @@ const TONE_ICONS: Record<IconTone, React.ReactNode> = {
 };
 
 import { type ActivityEntry } from "@/lib/types";
-export type { ActivityEntry };
+
 
 export function ActivityItem({ tone, actor, action, object, objectHref, suffix, metaTag, metaExtra, time }: ActivityEntry) {
   const ts = TONE_STYLES[tone];
   return (
     <div style={{
       display: "grid",
-      gridTemplateColumns: "32px 1fr auto",
-      gap: 12,
+      gridTemplateColumns: "28px 1fr auto",
+      gap: 10,
       alignItems: "flex-start",
-      padding: "10px 0",
+      padding: "6px 0",
     }}>
       <div style={{
-        width: 32, height: 32, borderRadius: "50%",
+        width: 28, height: 28, borderRadius: "50%",
         border: `1px solid ${ts.border}`,
         background: ts.bg,
         color: ts.color,
@@ -78,7 +78,7 @@ export function ActivityItem({ tone, actor, action, object, objectHref, suffix, 
       </div>
 
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13, color: C.ink, lineHeight: 1.45 }}>
+        <div style={{ fontSize: 12.5, color: C.ink, lineHeight: 1.4 }}>
           <b style={{ fontWeight: 600 }}>{actor}</b>{" "}
           <span style={{ color: C.muted }}>{action}</span>
           {object && (
@@ -87,7 +87,7 @@ export function ActivityItem({ tone, actor, action, object, objectHref, suffix, 
           {suffix && <span style={{ color: C.muted }}> {suffix}</span>}
         </div>
         {(metaTag || metaExtra) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
             {metaTag && (
               <span style={{
                 display: "inline-flex", alignItems: "center",

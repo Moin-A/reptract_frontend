@@ -28,6 +28,7 @@ export type Task = {
   done:          boolean;
   user?:         TaskUser | null;
   assignee?:     TaskUser | null;
+  due_date?:     string | null;
 };
 
 // ── Account ───────────────────────────────────────────────────────
@@ -78,6 +79,8 @@ export type RawActivity = {
   item_id:     number;
   entity:      ActivityEntity | null;
   entity_type: string;
+  due_date:    string;
+  created_at:  string;
 };
 
 // ── Activity ──────────────────────────────────────────────────────
