@@ -109,23 +109,39 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
     });
   }
 
-  const body = {
-    name:     fName.trim(),
-    category: fCategory,
-    assigned_to: fAssigned || null,
-    rating:   fRating,
-    tags:     fTags,
-    phone:    fPhone,
-    tollfree: fTollfree,
-    fax:      fFax,
-    email:    fEmail,
-    website:  fWebsite,
-  };
+  const billIds = { street1: "b-street1", street2: "b-street2", city: "b-city", state: "b-state", zip: "b-zip", country: "b-country" };
+  const shipIds = { street1: "s-street1", street2: "s-street2", city: "s-city", state: "s-state", zip: "s-zip", country: "s-country" };
+
+  function readAddr(ids: typeof billIds, type: string) {
+    const v = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null)?.value ?? "";
+    return {
+      address_type: type,
+      street1: v(ids.street1),
+      street2: v(ids.street2),
+      city:    v(ids.city),
+      state:   v(ids.state),
+      zipcode: v(ids.zip),
+      country: v(ids.country),
+    };
+  }
 
   async function submit() {
     if (!fName.trim()) { setFNameError(true); return; }
     setFNameError(false);
     setServerError(null);
+
+    const body = {
+      name:        fName.trim(),
+      category:    fCategory,
+      assigned_to: fAssigned || null,
+      rating:      fRating,
+      tags:        fTags,
+      phone:       fPhone,
+      email:       fEmail,
+      website:     fWebsite,
+      shipping_address_attributes: readAddr(shipIds, "shipping"),
+      billing_address_attributes:  readAddr(billIds, "billing"),
+    };
 
     if (editAccount) {
       const res  = await fetch(`/api/accounts/${editAccount.id}`, {
@@ -161,8 +177,7 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
     setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); onEditCancel?.(); }, 1200);
   }
 
-  const billIds = { street1: "b-street1", street2: "b-street2", city: "b-city", state: "b-state", zip: "b-zip", country: "b-country" };
-  const shipIds = { street1: "s-street1", street2: "s-street2", city: "s-city", state: "s-state", zip: "s-zip", country: "s-country" };
+
 
   const headerRight = (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
