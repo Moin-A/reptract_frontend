@@ -31,6 +31,18 @@ export type Task = {
   due_date?:     string | null;
 };
 
+// ── Address ───────────────────────────────────────────────────────
+export type Address = {
+  id:           number;
+  address_type: string;
+  street1:      string;
+  street2:      string;
+  city:         string;
+  state:        string;
+  zipcode:      string;
+  country:      string;
+};
+
 // ── Account ───────────────────────────────────────────────────────
 export type Account = {
   id:          number;
@@ -44,6 +56,8 @@ export type Account = {
   email?:      string;
   phone?:      string;
   assigned_to?: string | null;
+  billing_address?:  Address | null;
+  shipping_address?: Address | null;
 };
 
 // ── Opportunity ───────────────────────────────────────────────────

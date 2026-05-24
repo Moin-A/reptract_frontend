@@ -23,8 +23,8 @@ export function CreateCardShell({ title, formOpen, onFormOpenChange, headerRight
       </div>
 
       <Collapsible open={formOpen} onOpenChange={o => { if (!o) onFormOpenChange(false); }}>
-        <CollapsibleContent>
-          <div style={{ borderBottom: `1px solid ${C.line}`, background: "#FAFAF7" }}>
+        <CollapsibleContent forceMount>
+          <div style={{ display: formOpen ? undefined : "none", borderBottom: `1px solid ${C.line}`, background: "#FAFAF7" }}>
             {children}
           </div>
         </CollapsibleContent>

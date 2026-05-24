@@ -16,6 +16,7 @@ export function AccountsView() {
   const [search,     setSearch]     = useState("");
   const [searchTab,  setSearchTab]  = useState<"basic" | "advanced">("basic");
   const [view,       setView]       = useState<"list" | "grid">("list");
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
   useEffect(() => {
     fetch("/api/accounts", { credentials: "include" })
@@ -23,7 +24,7 @@ export function AccountsView() {
       .then((data: { accounts: Account[] }) => setAccounts(data.accounts))
       .finally(() => setLoading(false));
 
-      
+      console.log("Account view loaded", accounts);
   }, []);
 
   const filtered = accounts.filter(a => {
@@ -63,6 +64,9 @@ export function AccountsView() {
         view={view}
         onViewChange={setView}
         onAccountCreated={acct => setAccounts(prev => [acct, ...prev])}
+        onAccountUpdated={acct => setAccounts(prev => prev.map(a => a.id === acct.id ? acct : a))}
+        editAccount={editingAccount}
+        onEditCancel={() => setEditingAccount(null)}
       />
 
       {/* Search + List/Grid card */}
@@ -77,9 +81,7 @@ export function AccountsView() {
         {view === "list" && (
           <AccountListView
             accounts={filtered}
-            onEdit={() => {
-              // TODO: implement edit flow
-            }}
+            onEdit={id => setEditingAccount(accounts.find(a => a.id === id) ?? null)}
             
             onDelete={id => deleteOpp(id, setAccounts, "Delete this account?")}
           />

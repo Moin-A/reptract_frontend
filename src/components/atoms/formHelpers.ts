@@ -1,10 +1,11 @@
 import { C } from "@/components/organisms/dashboard/tokens";
 
-export type AddressIds = { street1: string; street2: string; city: string; state: string; zip: string; country: string };
+export type AddressIds = { id?: string; street1: string; street2: string; city: string; state: string; zip: string; country: string };
 
 export function readAddr(ids: AddressIds, type: string) {
   const v = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null)?.value ?? "";
   return {
+    id:         ids.id ? (v(ids.id) || undefined) : undefined,
     address_type: type,
     street1: v(ids.street1),
     street2: v(ids.street2),

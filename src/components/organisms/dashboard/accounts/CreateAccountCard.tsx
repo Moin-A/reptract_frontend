@@ -61,6 +61,32 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
     setFRating(editAccount.rating ?? 0);
     setFPhone(editAccount.phone ?? "");
     setFEmail(editAccount.email ?? "");
+    const setField = (id: string, val: string) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) el.value = val;
+    };
+
+    const bill = editAccount.billing_address;
+    if (bill) {
+      setField(BILL_IDS.street1, bill.street1 ?? "");
+      setField(BILL_IDS.street2, bill.street2 ?? "");
+      setField(BILL_IDS.city,    bill.city    ?? "");
+      setField(BILL_IDS.state,   bill.state   ?? "");
+      setField(BILL_IDS.zip,     bill.zipcode ?? "");
+      setField(BILL_IDS.country, bill.country ?? "");
+    }
+
+    const ship = editAccount.shipping_address;
+    if (ship) {
+      setSameAsBill(false);
+      setField(SHIP_IDS.street1, ship.street1 ?? "");
+      setField(SHIP_IDS.street2, ship.street2 ?? "");
+      setField(SHIP_IDS.city,    ship.city    ?? "");
+      setField(SHIP_IDS.state,   ship.state   ?? "");
+      setField(SHIP_IDS.zip,     ship.zipcode ?? "");
+      setField(SHIP_IDS.country, ship.country ?? "");
+    }
+
     setFormOpen(true);
   }, [editAccount]);
 
@@ -207,6 +233,7 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
                 />
 
                 {/* Addresses */}
+                <input type="hidden" id={BILL_IDS.id} value={editAccount?.billing_address?.id ?? ""} readOnly />
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                   <AddressGroup
                     title="Billing address"
@@ -240,11 +267,12 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
                         <FormInput id={SHIP_IDS.zip} disabled={sameAsBill} placeholder="ZIP" />
                         <CountrySelect id={SHIP_IDS.country} disabled={sameAsBill} />
                       </div>
+                      <input type="hidden" id={SHIP_IDS.id} value={editAccount?.shipping_address?.id ?? ""} readOnly />
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </div>  
 
       <CollapsibleSection title="Comment">
         <textarea onFocus={focusInput} onBlur={blurInput} rows={3}
