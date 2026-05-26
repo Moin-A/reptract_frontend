@@ -24,7 +24,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const response = await api.request(`/accounts/${id}`, {
     method: "PATCH",
-    body: JSON.stringify({ account: body }),
+    body: JSON.stringify(body),
     headers: {
       Cookie: cookieStore.toString(),
     },
@@ -42,7 +42,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   const response = await api.request(`/accounts/${id}`, {
     method: "PUT",
-    body: JSON.stringify({ account: body }),
+    body: JSON.stringify(body),
     headers: {
       Cookie: cookieStore.toString(),
     },

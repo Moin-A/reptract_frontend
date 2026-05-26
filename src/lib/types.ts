@@ -10,6 +10,12 @@ export interface User {
   updated_at: string;
 }
 
+// ── Group ─────────────────────────────────────────────────────────
+export interface Group {
+  id:   number;
+  name: string;
+}
+
 // ── Task ──────────────────────────────────────────────────────────
 export type TaskUser = {
   id:    number;

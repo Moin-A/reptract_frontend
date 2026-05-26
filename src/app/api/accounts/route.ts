@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
   const response = await api.request("/accounts", {
     method: "POST",
-    body: JSON.stringify({ account: body }),
+    body: JSON.stringify(body),
     headers: {
       Cookie: cookieStore.toString(),
     },

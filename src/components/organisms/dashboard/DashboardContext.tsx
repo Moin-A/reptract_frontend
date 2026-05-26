@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
-import { type Task, type User } from "@/lib/types";
+import { type Task, type User, type Group } from "@/lib/types";
 import { ALL_STAGE_KEYS } from "./opportunities/stages";
 import { ALL_CAT_KEYS } from "./accounts/categories";
 
@@ -22,12 +22,15 @@ interface DashboardContextValue {
   setOppStageFilter:  Dispatch<SetStateAction<string[]>>;
   acctCatFilter:      string[];
   setAcctCatFilter:   Dispatch<SetStateAction<string[]>>;
+  groups:             Group[];
+  setGroups:          Dispatch<SetStateAction<string[]>>;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
 
-export function DashboardProvider({ children, initialTasks = {}, initialUsers = [] }: { children: ReactNode; initialTasks?: { [key: string]: Task[] }; initialUsers?: User[] }) {
+export function DashboardProvider({ children, initialTasks = {}, initialUsers = [], usergroups = [] }: { children: ReactNode; initialTasks?: { [key: string]: Task[] }; initialUsers?: User[]; usergroups?: Group[];}) {
   const [activeTab, setActiveTab]     = useState("Dashboard");
+  const [groups, setGroups] = useState<Group[]>(usergroups); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tasks, setTasks]             = useState<{[key: string]: Task[]}>(initialTasks);
   const [nextId, setNextId]           = useState(Object.values(initialTasks).flat().length + 1);
@@ -36,7 +39,7 @@ export function DashboardProvider({ children, initialTasks = {}, initialUsers = 
   const [acctCatFilter,  setAcctCatFilter]    = useState<string[]>(ALL_CAT_KEYS);
 
   return (
-    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers, oppStageFilter, setOppStageFilter, acctCatFilter, setAcctCatFilter }}>
+    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers, oppStageFilter, setOppStageFilter, acctCatFilter, setAcctCatFilter, groups, setGroups }}>
       {children}
     </DashboardContext.Provider>
   );

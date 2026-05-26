@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { CATEGORIES, type AccountCategoryKey } from "./categories";
 import { type Account } from "@/lib/types";
+import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
 import { BILL_IDS, SHIP_IDS, PHONE_FIELDS, CONTACT_FIELDS } from "@/lib/constants";
 import { CollapsibleSection } from "@/components/molecules/CollapsibleSection";
 import { CreateCardShell } from "@/components/molecules/CreateCardShell";
@@ -24,6 +25,7 @@ import { TagsInput } from "@/components/atoms/TagsInput";
 import { AssigneeSelect } from "@/components/atoms/AssigneeSelect";
 import { StarRating } from "@/components/atoms/StarRating";
 import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
+import { PermissionsField, type PermValue } from "@/components/atoms/PermissionsField";
 
 type Props = {
   view:              "list" | "grid";
@@ -37,6 +39,7 @@ type Props = {
 
 
 export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAccountUpdated, editAccount, onEditCancel }: Props) {
+  const { groups } = useDashboard();
   const [formOpen,   setFormOpen]   = useState(false);
   const [fName,      setFName]      = useState("");
   const [fCategory,  setFCategory]  = useState<AccountCategoryKey>("other");
@@ -52,6 +55,9 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
   const [fNameError,   setFNameError]   = useState(false);
   const [fSuccess,     setFSuccess]     = useState(false);
   const [serverError,  setServerError]  = useState<FormError | null>(null);
+  const [fPerm,        setFPerm]        = useState<PermValue>("everyone");
+  const [fPermUsers,   setFPermUsers]   = useState<string[]>([]);
+  const [fPermGroups,  setFPermGroups]  = useState<string[]>([]);
 
   useEffect(() => {
     if (!editAccount) return;
@@ -95,6 +101,7 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
     setFTags([]); setFPhone(""); setFTollfree(""); setFFax("");
     setFEmail(""); setFWebsite(""); setSameAsBill(true);
     setFNameError(false); setFSuccess(false); setServerError(null);
+    setFPerm("everyone"); setFPermUsers([]); setFPermGroups([]);
     [...Object.values(BILL_IDS), ...Object.values(SHIP_IDS)].forEach(id => {
       const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
       if (el) el.value = "";
@@ -117,16 +124,21 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
     setServerError(null);
 
     const body = {
-      name:        fName.trim(),
-      category:    fCategory,
-      assigned_to: fAssigned || null,
-      rating:      fRating,
-      tags:        fTags,
-      phone:       fPhone,
-      email:       fEmail,
-      website:     fWebsite,
-      shipping_address_attributes: readAddr(SHIP_IDS, "shipping"),
-      billing_address_attributes:  readAddr(BILL_IDS, "billing"),
+      account: {
+        name:        fName.trim(),
+        category:    fCategory,
+        assigned_to: fAssigned || null,
+        rating:      fRating,
+        tags:        fTags,
+        phone:       fPhone,
+        email:       fEmail,
+        website:     fWebsite,
+        shipping_address_attributes: readAddr(SHIP_IDS, "shipping"),
+        billing_address_attributes:  readAddr(BILL_IDS, "billing"),
+      },
+      permission:       fPerm,
+      permitted_users:  fPerm === "some" ? fPermUsers  : [],
+      permitted_groups: fPerm === "some" ? groups.filter(g => fPermGroups.includes(g.name)).map(g => g.id) : [],
     };
 
     if (editAccount) {
@@ -281,9 +293,14 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
       </CollapsibleSection>
 
       <CollapsibleSection title="Permissions">
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.5 }}>
-          By default all users will have access to the account. You can change permissions later.
-        </p>
+        <PermissionsField
+          value={fPerm}
+          onChange={setFPerm}
+          users={fPermUsers}
+          groups={fPermGroups}
+          onUsersChange={setFPermUsers}
+          onGroupsChange={setFPermGroups}
+        />
       </CollapsibleSection>
 
       <div style={{ padding: "0 24px" }}>
