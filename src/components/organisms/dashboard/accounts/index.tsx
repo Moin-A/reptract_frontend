@@ -22,9 +22,7 @@ export function AccountsView() {
     fetch("/api/accounts", { credentials: "include" })
       .then(res => res.json())
       .then((data: { accounts: Account[] }) => setAccounts(data.accounts))
-      .finally(() => setLoading(false));
-
-      console.log("Account view loaded", accounts);
+      .finally(() => setLoading(false));      
   }, []);
 
   const filtered = accounts.filter(a => {
@@ -64,7 +62,7 @@ export function AccountsView() {
         view={view}
         onViewChange={setView}
         onAccountCreated={acct => setAccounts(prev => [acct, ...prev])}
-        onAccountUpdated={acct => setAccounts(prev => prev.map(a => a.id === acct.id ? acct : a))}
+        onAccountUpdated={acct => { debugger; return setAccounts(prev => prev.map(a => a.id === acct.id ? acct : a))}}
         editAccount={editingAccount}
         onEditCancel={() => setEditingAccount(null)}
       />
