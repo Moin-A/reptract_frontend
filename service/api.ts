@@ -50,7 +50,7 @@ export async function fetchUsers(): Promise<{ id: number; name: string; email: s
   }
 }
 
-export async function fetchGroups(): Promise<{ groupes: {id: number; name: string }}[]> {
+export async function fetchGroups(): Promise<{ groups: { id: number; name: string }[] }> {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
   const api = new ReptrackApi();
@@ -58,10 +58,10 @@ export async function fetchGroups(): Promise<{ groupes: {id: number; name: strin
     const res = await api.request("/groups", {
       headers: { Cookie: cookieStore.toString() },
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { groups: [] };
     return res.json();
   } catch {
-    return [];
+    return { groups: [] };
   }
 }
 
