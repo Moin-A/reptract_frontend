@@ -39,7 +39,7 @@ type Props = {
 
 
 export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAccountUpdated, editAccount, onEditCancel }: Props) {
-  const { groups } = useDashboard();
+  const { groups, users: allUsers } = useDashboard();
   const [formOpen,   setFormOpen]   = useState(false);
   const [fName,      setFName]      = useState("");
   const [fCategory,  setFCategory]  = useState<AccountCategoryKey>("other");
@@ -135,9 +135,9 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
         website:     fWebsite,
         shipping_address_attributes: readAddr(SHIP_IDS, "shipping"),
         billing_address_attributes:  readAddr(BILL_IDS, "billing"),
+        access:          fPerm === "private" ? "Private" : fPerm === "everyone" ? "Public" : "Shared",
       },
-      permission:       fPerm,
-      permitted_users:  fPerm === "some" ? fPermUsers  : [],
+      permitted_users:  fPerm === "some" ? allUsers.filter(u => fPermUsers.includes(u.name)).map(u => u.id) : [],
       permitted_groups: fPerm === "some" ? groups.filter(g => fPermGroups.includes(g.name)).map(g => g.id) : [],
     };
 

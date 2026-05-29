@@ -24,8 +24,8 @@ const OPTIONS: { value: PermValue; title: string; sub: string }[] = [
 
 export function PermissionsField({ value, onChange, users, groups, onUsersChange, onGroupsChange }: Props) {
   const { users: allUsers, groups: rawGroups } = useDashboard();
-  console.log({rawGroups})
-  const usersDirectory  = [...new Set(allUsers.map(u => u.name))];
+  console.log({allUsers})
+  const usersDirectory  = allUsers.map(u => u.name);
   const groupsDirectory = rawGroups.map(g => g.name);
   return (
     <div>
@@ -165,7 +165,7 @@ function ChipInput({ chips, onAdd, onRemove, directory, placeholder, inputId }: 
           transition: "border-color 140ms, box-shadow 140ms",
         }}
       >
-        {chips.map(chip => (
+        {chips.map((chip) => (
           <span key={chip} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "white", color: C.ink, border: `1px solid ${C.line}`, borderRadius: 6, padding: "3px 7px 3px 6px", fontSize: 12.5, fontWeight: 500 }}>
             <span
               onClick={e => { e.stopPropagation(); onRemove(chip); }}
