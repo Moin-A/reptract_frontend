@@ -23,7 +23,7 @@ interface DashboardContextValue {
   acctCatFilter:      string[];
   setAcctCatFilter:   Dispatch<SetStateAction<string[]>>;
   groups:             Group[];
-  setGroups:          Dispatch<SetStateAction<string[]>>;
+  setGroups:          Dispatch<SetStateAction<Group[]>>;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
