@@ -1,4 +1,4 @@
-import { ReptrackApi } from "../../../service/api";
+import { ReptrackApi } from "../../../../service/api";
 import { cookies } from "next/headers";
 
 export async function GET() {
