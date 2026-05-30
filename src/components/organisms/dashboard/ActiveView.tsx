@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useDashboard } from "./DashboardContext";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import Dashboard from "./index";
@@ -19,13 +20,23 @@ const TAB_TITLES: Record<string, string> = {
 };
 
 export function ActiveView() {
-  const { activeTab } = useDashboard();
+  const { activeTab, incrementAcctCreate, incrementAcctExport } = useDashboard();
+
+  const subtitle = useMemo(() => {
+    const d = new Date();
+    const dateStr = d.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const hour = d.getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    return `${dateStr} · ${greeting}, Admin.`;
+  }, []);
 
   return (
     <main style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 16, maxWidth: 960 }}>
       <PageHeader
         title={TAB_TITLES[activeTab] ?? activeTab}
-        subtitle="Monday, 21 April 2026 · Good morning, Admin."
+        subtitle={subtitle}
+        onNewRecord={activeTab === "Accounts" ? incrementAcctCreate : undefined}
+        onExport={activeTab === "Accounts" ? incrementAcctExport : undefined}
       />
       {activeTab === "Dashboard"     && <Dashboard />}
       {activeTab === "Campaigns"     && <CampaignDashboard />}

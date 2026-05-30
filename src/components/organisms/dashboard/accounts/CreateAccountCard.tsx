@@ -28,17 +28,18 @@ import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
 import { PermissionsField, type PermValue } from "@/components/atoms/PermissionsField";
 
 type Props = {
-  view:              "list" | "grid";
-  onViewChange:      (v: "list" | "grid") => void;
-  onAccountCreated:  (acct: Account) => void;
-  onAccountUpdated?: (acct: Account) => void;
-  editAccount?:      Account | null;
-  onEditCancel?:     () => void;
+  view:                "list" | "grid";
+  onViewChange:        (v: "list" | "grid") => void;
+  onAccountCreated:    (acct: Account) => void;
+  onAccountUpdated?:   (acct: Account) => void;
+  editAccount?:        Account | null;
+  onEditCancel?:       () => void;
+  externalOpenSignal?: number;
 };
 
 
 
-export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAccountUpdated, editAccount, onEditCancel }: Props) {
+export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAccountUpdated, editAccount, onEditCancel, externalOpenSignal }: Props) {
   const { groups, users: allUsers } = useDashboard();
   const [formOpen,   setFormOpen]   = useState(false);
   const [fName,      setFName]      = useState("");
@@ -55,10 +56,11 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
   const [fNameError,   setFNameError]   = useState(false);
   const [fSuccess,     setFSuccess]     = useState(false);
   const [serverError,  setServerError]  = useState<FormError | null>(null);
-  const [fPerm,        setFPerm]        = useState<PermValue>("everyone");
+  const [fPerm,        setFPerm]        = useState<PermValue>("private");
   const [fPermUsers,   setFPermUsers]   = useState<string[]>([]);
   const [fPermGroups,  setFPermGroups]  = useState<string[]>([]);
 
+  // Open the form and populate controlled fields when an edit is triggered
   useEffect(() => {
     if (!editAccount) return;
     setFName(editAccount.name);
@@ -67,41 +69,51 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
     setFRating(editAccount.rating ?? 0);
     setFPhone(editAccount.phone ?? "");
     setFEmail(editAccount.email ?? "");
-    const setField = (id: string, val: string) => {
-      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
-      if (el) el.value = val;
-    };
-
-    const bill = editAccount.billing_address;
-    if (bill) {
-      setField(BILL_IDS.street1, bill.street1 ?? "");
-      setField(BILL_IDS.street2, bill.street2 ?? "");
-      setField(BILL_IDS.city,    bill.city    ?? "");
-      setField(BILL_IDS.state,   bill.state   ?? "");
-      setField(BILL_IDS.zip,     bill.zipcode ?? "");
-      setField(BILL_IDS.country, bill.country ?? "");
-    }
-
-    const ship = editAccount.shipping_address;
-    if (ship) {
-      setSameAsBill(false);
-      setField(SHIP_IDS.street1, ship.street1 ?? "");
-      setField(SHIP_IDS.street2, ship.street2 ?? "");
-      setField(SHIP_IDS.city,    ship.city    ?? "");
-      setField(SHIP_IDS.state,   ship.state   ?? "");
-      setField(SHIP_IDS.zip,     ship.zipcode ?? "");
-      setField(SHIP_IDS.country, ship.country ?? "");
-    }
-
     setFormOpen(true);
+
+    // Populate uncontrolled address DOM inputs after the form renders
+    const tid = setTimeout(() => {
+      const setField = (id: string, val: string) => {
+        const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+        if (el) el.value = val;
+      };
+      const bill = editAccount.billing_address;
+      if (bill) {
+        setField(BILL_IDS.street1, bill.street1 ?? "");
+        setField(BILL_IDS.street2, bill.street2 ?? "");
+        setField(BILL_IDS.city,    bill.city    ?? "");
+        setField(BILL_IDS.state,   bill.state   ?? "");
+        setField(BILL_IDS.zip,     bill.zipcode ?? "");
+        setField(BILL_IDS.country, bill.country ?? "");
+      }
+      const ship = editAccount.shipping_address;
+      if (ship) {
+        setSameAsBill(false);
+        setField(SHIP_IDS.street1, ship.street1 ?? "");
+        setField(SHIP_IDS.street2, ship.street2 ?? "");
+        setField(SHIP_IDS.city,    ship.city    ?? "");
+        setField(SHIP_IDS.state,   ship.state   ?? "");
+        setField(SHIP_IDS.zip,     ship.zipcode ?? "");
+        setField(SHIP_IDS.country, ship.country ?? "");
+      }
+    }, 0);
+    return () => clearTimeout(tid);
   }, [editAccount]);
+
+  // Handle "New Record" from the page header
+  useEffect(() => {
+    if (!externalOpenSignal) return;
+    reset();
+    setFormOpen(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalOpenSignal]);
 
   function reset() {
     setFName(""); setFCategory("other"); setFAssigned(""); setFRating(0);
     setFTags([]); setFPhone(""); setFTollfree(""); setFFax("");
     setFEmail(""); setFWebsite(""); setSameAsBill(true);
     setFNameError(false); setFSuccess(false); setServerError(null);
-    setFPerm("everyone"); setFPermUsers([]); setFPermGroups([]);
+    setFPerm("private"); setFPermUsers([]); setFPermGroups([]);
     [...Object.values(BILL_IDS), ...Object.values(SHIP_IDS)].forEach(id => {
       const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
       if (el) el.value = "";
@@ -121,6 +133,14 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
   async function submit() {
     if (!fName.trim()) { setFNameError(true); return; }
     setFNameError(false);
+    if (!fEmail.trim()) {
+      setServerError({ title: "Email required", body: "Email address is required." });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fEmail.trim())) {
+      setServerError({ title: "Invalid email", body: "Please enter a valid email address." });
+      return;
+    }
     setServerError(null);
 
     const body = {
@@ -151,7 +171,10 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
       const data = await res.json();
       if (!res.ok) {
         const msgs: string[] = data?.errors ?? [];
-        setServerError({ title: "Couldn't save changes", body: msgs.length ? msgs.join(", ") : "The server returned an error. Try again in a few seconds." });
+        const body = msgs.length
+          ? msgs.map(m => `• ${m}`).join("\n")
+          : "The server returned an error. Try again in a few seconds.";
+        setServerError({ title: "Couldn't save changes", body });
         return;
       }
       onAccountUpdated?.(data as Account);
@@ -165,7 +188,10 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
       const data = await res.json();
       if (!res.ok) {
         const msgs: string[] = data?.errors ?? [];
-        setServerError({ title: "Couldn't create account", body: msgs.length ? msgs.join(", ") : "The server returned an error. Try again in a few seconds." });
+        const body = msgs.length
+          ? msgs.map(m => `• ${m}`).join("\n")
+          : "The server returned an error. Try again in a few seconds.";
+        setServerError({ title: "Couldn't create account", body });
         return;
       }
       onAccountCreated(data as Account);
@@ -252,6 +278,7 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
                     ids={BILL_IDS}
                     onInput={syncShipping}
                     icon={<CreditCardIcon />}
+                    required
                   />
                   <div style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 14, background: "white" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>

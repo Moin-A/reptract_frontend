@@ -372,7 +372,7 @@ export function FormErrorBanner({
           <div style={{ fontWeight: 700, color: t.title, fontSize: 13, marginBottom: 2 }}>
             {error.title}
           </div>
-          <div style={{ color: t.body, fontSize: 12.5, lineHeight: 1.5 }}>
+          <div style={{ color: t.body, fontSize: 12.5, lineHeight: 1.5, whiteSpace: "pre-line" }}>
             {error.body}
             {errorRef && (
               <> Reference <code style={{

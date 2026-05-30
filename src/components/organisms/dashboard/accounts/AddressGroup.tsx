@@ -11,17 +11,18 @@ export type AddressIds = {
   country: string;
 };
 
-export function AddressGroup({ title, icon, ids, disabled, onInput }: {
+export function AddressGroup({ title, icon, ids, disabled, onInput, required }: {
   title: string;
   icon: React.ReactNode;
   ids: AddressIds;
   disabled?: boolean;
   onInput?: () => void;
+  required?: boolean;
 }) {
   return (
     <div style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 14, background: "white" }}>
       <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: C.ink, display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-        {icon}{title}
+        {icon}{title}{required && <span style={{ color: C.err, marginLeft: 1 }}>*</span>}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <FormInput id={ids.street1} disabled={disabled} placeholder="Street address" onInput={onInput} />

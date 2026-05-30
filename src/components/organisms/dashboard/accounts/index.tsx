@@ -3,38 +3,110 @@ import { useEffect, useState } from "react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
 import { type Account } from "@/lib/types";
-import { deleteOpp } from "@/components/atoms/deleteOpp";
+import { type AccountCategoryKey } from "./categories";
 import { CreateAccountCard } from "./CreateAccountCard";
 import { AccountSearchBar } from "./AccountSearchBar";
 import { AccountListView } from "./AccountListView";
 import { AccountGridView } from "./AccountGridView";
 
 export function AccountsView() {
-  const { acctCatFilter } = useDashboard();
-  const [accounts,   setAccounts]   = useState<Account[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [search,     setSearch]     = useState("");
-  const [searchTab,  setSearchTab]  = useState<"basic" | "advanced">("basic");
-  const [view,       setView]       = useState<"list" | "grid">("list");
-  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const {
+    acctCatFilter,
+    setAcctCountByCategory,
+    acctCreateSignal,
+    acctExportSignal,
+  } = useDashboard();
+
+  const [accounts,        setAccounts]        = useState<Account[]>([]);
+  const [loading,         setLoading]         = useState(true);
+  const [search,          setSearch]          = useState("");
+  const [searchTab,       setSearchTab]       = useState<"basic" | "advanced">("basic");
+  const [view,            setView]            = useState<"list" | "grid">("list");
+  const [editingAccount,  setEditingAccount]  = useState<Account | null>(null);
+  const [sort,            setSort]            = useState<"newest" | "oldest" | "name">("newest");
+  const [advancedCategory,   setAdvancedCategory]   = useState("");
+  const [advancedMinRating,  setAdvancedMinRating]  = useState(0);
 
   useEffect(() => {
     fetch("/api/accounts", { credentials: "include" })
       .then(res => res.json())
-      .then((data: { accounts: Account[] }) => setAccounts(data.accounts))
-      .finally(() => setLoading(false));      
-  }, []);
+      .then((data: { accounts: Account[] }) => {
+        const accts = data.accounts ?? [];
+        setAccounts(accts);
+        const counts: Record<string, number> = {};
+        accts.forEach(a => {
+          const k = (a.category as string)?.toLowerCase();
+          if (k) counts[k] = (counts[k] ?? 0) + 1;
+        });
+        setAcctCountByCategory(counts);
+      })
+      .finally(() => setLoading(false));
+  }, [setAcctCountByCategory]);
+
+  // "New Record" button in PageHeader triggers this
+  useEffect(() => {
+    if (acctCreateSignal > 0) setEditingAccount(null);
+  }, [acctCreateSignal]);
+
+  function handleExport() {
+    if (accounts.length === 0) return;
+    const headers = ["Name", "Category", "Email", "Phone", "Assigned To", "Rating", "Contacts", "Opps"];
+    const rows = accounts.map(a => [
+      `"${(a.name ?? "").replace(/"/g, '""')}"`,
+      a.category ?? "",
+      a.email ?? "",
+      a.phone ?? "",
+      a.assigned_to ?? "",
+      String(a.rating ?? 0),
+      String(a.contacts ?? 0),
+      String(a.opps ?? 0),
+    ].join(","));
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href     = url;
+    link.download = "accounts.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // "Export" button in PageHeader triggers this
+  useEffect(() => {
+    if (acctExportSignal > 0) handleExport();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acctExportSignal]);
+
+  async function handleDelete(id: number) {
+    if (!window.confirm("Delete this account? This cannot be undone.")) return;
+    setAccounts(prev => prev.filter(a => a.id !== id));
+    await fetch(`/api/accounts/${id}`, { method: "DELETE", credentials: "include" });
+  }
+
+  const catKey = (a: Account) =>
+    (a.category as string)?.toLowerCase() as AccountCategoryKey;
 
   const filtered = accounts.filter(a => {
-    const inCat = !a.category || acctCatFilter.includes(a.category);
-    const q = search.toLowerCase();
-    return inCat && (!q || a.name.toLowerCase().includes(q));
+    const k    = catKey(a);
+    const inCat    = !k || acctCatFilter.includes(k);
+    const q        = search.toLowerCase();
+    const inSearch = !q || a.name.toLowerCase().includes(q);
+    const inAdvCat = !advancedCategory || k === advancedCategory;
+    const inRating = advancedMinRating === 0 || (a.rating ?? 0) >= advancedMinRating;
+    return inCat && inSearch && inAdvCat && inRating;
+  });
+
+  const displayed = [...filtered].sort((a, b) => {
+    if (sort === "oldest") return (b.daysAgo ?? 0) - (a.daysAgo ?? 0);
+    if (sort === "name")   return a.name.localeCompare(b.name);
+    return (a.daysAgo ?? 0) - (b.daysAgo ?? 0); // newest
   });
 
   const totalAccounts   = accounts.length;
-  const activeCustomers = accounts.filter(a => a.category === "customer").length;
-  const openOpps        = accounts.reduce((s, a) => s + a.opps, 0);
-  const acctWithOpps    = accounts.filter(a => a.opps > 0).length;
+  const activeCustomers = accounts.filter(a => (a.category as string)?.toLowerCase() === "customer").length;
+  const openOpps        = accounts.reduce((s, a) => s + (a.opps ?? 0), 0);
+  const acctWithOpps    = accounts.filter(a => (a.opps ?? 0) > 0).length;
+  const thisMonthCount  = accounts.filter(a => (a.daysAgo ?? 0) <= 30).length;
 
   if (loading) {
     return <div style={{ padding: 32, fontSize: 13, color: "#9A9A9A" }}>Loading accounts…</div>;
@@ -45,10 +117,32 @@ export function AccountsView() {
       {/* KPI strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {[
-          { label: "Total accounts",     value: String(totalAccounts),   sub: "↑ 6 this month",                                             up: true  },
-          { label: "Active customers",   value: String(activeCustomers), sub: `${Math.round(activeCustomers / totalAccounts * 100)}% of book`, up: false },
-          { label: "Open opportunities", value: String(openOpps),        sub: `across ${acctWithOpps} accounts`,                            up: true  },
-          { label: "Avg. account value", value: "$8.4K",                 sub: "↑ 3% vs last quarter",                                       up: true  },
+          {
+            label: "Total accounts",
+            value: String(totalAccounts),
+            sub:   `↑ ${thisMonthCount} this month`,
+            up:    true,
+          },
+          {
+            label: "Active customers",
+            value: String(activeCustomers),
+            sub:   totalAccounts > 0
+              ? `${Math.round(activeCustomers / totalAccounts * 100)}% of book`
+              : "0% of book",
+            up: false,
+          },
+          {
+            label: "Open opportunities",
+            value: String(openOpps),
+            sub:   `across ${acctWithOpps} account${acctWithOpps !== 1 ? "s" : ""}`,
+            up:    true,
+          },
+          {
+            label: "Avg. account value",
+            value: "$8.4K",
+            sub:   "↑ 3% vs last quarter",
+            up:    true,
+          },
         ].map(k => (
           <div key={k.label} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: C.muted2, fontWeight: 600, marginBottom: 6 }}>{k.label}</div>
@@ -62,9 +156,10 @@ export function AccountsView() {
         view={view}
         onViewChange={setView}
         onAccountCreated={acct => setAccounts(prev => [acct, ...prev])}
-        onAccountUpdated={acct => { debugger; return setAccounts(prev => prev.map(a => a.id === acct.id ? acct : a))}}
+        onAccountUpdated={acct => setAccounts(prev => prev.map(a => a.id === acct.id ? acct : a))}
         editAccount={editingAccount}
         onEditCancel={() => setEditingAccount(null)}
+        externalOpenSignal={acctCreateSignal}
       />
 
       {/* Search + List/Grid card */}
@@ -74,17 +169,22 @@ export function AccountsView() {
           onSearchChange={setSearch}
           searchTab={searchTab}
           onSearchTabChange={setSearchTab}
-          resultCount={filtered.length}
+          resultCount={displayed.length}
+          sort={sort}
+          onSortChange={setSort}
+          advancedCategory={advancedCategory}
+          onAdvancedCategoryChange={setAdvancedCategory}
+          advancedMinRating={advancedMinRating}
+          onAdvancedMinRatingChange={setAdvancedMinRating}
         />
         {view === "list" && (
           <AccountListView
-            accounts={filtered}
+            accounts={displayed}
             onEdit={id => setEditingAccount(accounts.find(a => a.id === id) ?? null)}
-            
-            onDelete={id => deleteOpp(id, setAccounts, "Delete this account?")}
+            onDelete={handleDelete}
           />
         )}
-        {view === "grid" && <AccountGridView accounts={filtered} />}
+        {view === "grid" && <AccountGridView accounts={displayed} />}
       </div>
     </>
   );

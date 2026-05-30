@@ -8,6 +8,6 @@ export const PHONE_FIELDS = [
 ] as const;
 
 export const CONTACT_FIELDS = [
-  { label: "Email",   placeholder: "hello@example.com", type: "email" },
+  { label: "Email",   placeholder: "hello@example.com", type: "email", required: true  },
   { label: "Website", placeholder: "https://example.com", type: "url"  },
 ] as const;

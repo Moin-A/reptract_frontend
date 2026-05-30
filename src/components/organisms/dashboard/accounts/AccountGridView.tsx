@@ -31,7 +31,9 @@ export function AccountGridView({ accounts }: Props) {
               <AccountAvatar name={a.name} color={cat.color} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, lineHeight: 1.25, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{a.name}</div>
-                <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>added {a.daysAgo}d ago</div>
+                <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>
+                  added {a.daysAgo ?? 0} day{a.daysAgo !== 1 ? "s" : ""} ago{a.user ? ` by ${a.user}` : ""}
+                </div>
               </div>
             </div>
             <AccountCategoryPill label={cat.label} color={cat.color} pillBg={cat.pillBg} pillColor={cat.pillColor} />

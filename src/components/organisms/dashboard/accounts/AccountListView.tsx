@@ -38,9 +38,14 @@ export function AccountListView({ accounts, onDelete, onEdit }: Props) {
             <AccountCategoryPill label={cat.label} color={cat.color} pillBg={cat.pillBg} pillColor={cat.pillColor} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                <a href="#" onClick={e => e.preventDefault()} style={{ color: C.ink }}>{a.name}</a>
+                <a href="#" onClick={e => { e.preventDefault(); onEdit(a.id); }} style={{ color: C.ink, textDecoration: "none" }}
+                  onMouseEnter={e => { e.currentTarget.style.textDecoration = "underline"; }}
+                  onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; }}
+                >{a.name}</a>
               </div>
-              <div style={{ fontSize: 12.5, color: C.muted }}>added {a.daysAgo} days ago by {a.user}</div>
+              <div style={{ fontSize: 12.5, color: C.muted }}>
+                added {a.daysAgo ?? 0} days ago{a.user ? ` by ${a.user}` : ""}
+              </div>
             </div>
             <div style={{ flexShrink: 0, display: "flex", gap: 18 }}>
               {([{ val: a.contacts, label: "Contacts" }, { val: a.opps, label: "Opps" }] as const).map(s => (

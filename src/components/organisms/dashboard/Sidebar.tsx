@@ -246,7 +246,7 @@ function RecentItem({ type, name }: RecentItemDef) {
 }
 
 function AccountCategoriesSection() {
-  const { acctCatFilter, setAcctCatFilter } = useDashboard();
+  const { acctCatFilter, setAcctCatFilter, acctCountByCategory } = useDashboard();
 
   function toggle(key: string) {
     setAcctCatFilter(prev =>
@@ -254,12 +254,13 @@ function AccountCategoriesSection() {
     );
   }
 
-  const total = CATEGORIES.reduce((sum, c) => sum + c.count, 0);
+  const total = Object.values(acctCountByCategory).reduce((sum, n) => sum + n, 0);
 
   return (
     <div>
       {CATEGORIES.map(c => {
         const active = acctCatFilter.includes(c.key);
+        const count  = acctCountByCategory[c.key] ?? 0;
         return (
           <div key={c.key} onClick={() => toggle(c.key)}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 2px", fontSize: 13, cursor: "pointer", borderRadius: 6, transition: "background 120ms" }}
@@ -276,7 +277,7 @@ function AccountCategoriesSection() {
               <span style={{ width: 8, height: 8, borderRadius: 8, background: c.color, flexShrink: 0 }} />
               <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.label}</span>
             </div>
-            <span style={{ fontSize: 12, color: C.muted2, background: "white", border: `1px solid ${C.line}`, borderRadius: 100, padding: "1px 8px", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{c.count}</span>
+            <span style={{ fontSize: 12, color: C.muted2, background: "white", border: `1px solid ${C.line}`, borderRadius: 100, padding: "1px 8px", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{count}</span>
           </div>
         );
       })}
