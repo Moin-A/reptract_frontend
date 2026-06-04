@@ -8,6 +8,7 @@ import { CreateAccountCard } from "./CreateAccountCard";
 import { AccountSearchBar } from "./AccountSearchBar";
 import { AccountListView } from "./AccountListView";
 import { AccountGridView } from "./AccountGridView";
+import { ConfirmDialog } from "@/components/molecules/ConfirmDialog";
 
 export function AccountsView() {
   const {
@@ -26,6 +27,7 @@ export function AccountsView() {
   const [sort,            setSort]            = useState<"newest" | "oldest" | "name">("newest");
   const [advancedCategory,   setAdvancedCategory]   = useState("");
   const [advancedMinRating,  setAdvancedMinRating]  = useState(0);
+  const [pendingDelete,      setPendingDelete]      = useState<Account | null>(null);
 
   useEffect(() => {
     fetch("/api/accounts", { credentials: "include" })
@@ -77,8 +79,9 @@ export function AccountsView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acctExportSignal]);
 
-  async function handleDelete(id: number) {
-    if (!window.confirm("Delete this account? This cannot be undone.")) return;
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
     setAccounts(prev => prev.filter(a => a.id !== id));
     await fetch(`/api/accounts/${id}`, { method: "DELETE", credentials: "include" });
   }
@@ -181,11 +184,26 @@ export function AccountsView() {
           <AccountListView
             accounts={displayed}
             onEdit={id => setEditingAccount(accounts.find(a => a.id === id) ?? null)}
-            onDelete={handleDelete}
+            onDelete={id => setPendingDelete(accounts.find(a => a.id === id) ?? null)}
           />
         )}
         {view === "grid" && <AccountGridView accounts={displayed} />}
       </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={open => { if (!open) setPendingDelete(null); }}
+        title="Delete account"
+        description={
+          <>
+            Are you sure you want to delete{" "}
+            <strong>{pendingDelete?.name ?? ""}</strong>? This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }

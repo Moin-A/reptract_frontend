@@ -3,6 +3,11 @@ import { useState } from "react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { type Lead } from "@/lib/types";
 import { LEAD_STATUS_MAP } from "./statuses";
+import { ConfirmDialog } from "@/components/molecules/ConfirmDialog";
+
+function leadName(lead: Lead) {
+  return lead.name || `${lead.first_name ?? ""} ${lead.last_name ?? ""}`.trim();
+}
 
 type Props = {
   leads:     Lead[];
@@ -31,6 +36,7 @@ function initials(lead: Lead) {
 
 export function LeadListView({ leads, onEdit, onDelete, onConvert }: Props) {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Lead | null>(null);
 
   if (leads.length === 0) {
     return (
@@ -41,7 +47,8 @@ export function LeadListView({ leads, onEdit, onDelete, onConvert }: Props) {
   }
 
   return (
-    <div>
+    <>
+      <div>
       {leads.map(lead => {
         const status    = LEAD_STATUS_MAP[lead.status] ?? LEAD_STATUS_MAP["new"];
         const isHovered = hoveredId === lead.id;
@@ -125,16 +132,29 @@ export function LeadListView({ leads, onEdit, onDelete, onConvert }: Props) {
               <ActionBtn
                 label="Delete"
                 color={C.err}
-                onClick={e => {
-                  e.stopPropagation();
-                  if (confirm(`Delete "${lead.name || `${lead.first_name} ${lead.last_name}`}"?`)) onDelete(lead.id);
-                }}
+                onClick={e => { e.stopPropagation(); setPendingDelete(lead); }}
               />
             </div>
           </div>
         );
       })}
-    </div>
+      </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={open => { if (!open) setPendingDelete(null); }}
+        title="Delete lead"
+        description={
+          <>
+            Are you sure you want to delete{" "}
+            <strong>{pendingDelete ? leadName(pendingDelete) : ""}</strong>? This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => { if (pendingDelete) onDelete(pendingDelete.id); }}
+      />
+    </>
   );
 }
 
