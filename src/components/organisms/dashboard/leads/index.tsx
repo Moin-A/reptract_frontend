@@ -4,7 +4,6 @@ import { C } from "@/components/organisms/dashboard/tokens";
 import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
 import { type Lead } from "@/lib/types";
 import { ALL_LEAD_STATUS_KEYS, LEAD_STATUS_MAP } from "./statuses";
-import { deleteOpp } from "@/components/atoms/deleteOpp";
 import { CreateLeadCard } from "./CreateLeadCard";
 import { LeadListView } from "./LeadListView";
 import { LeadSearchBar } from "./LeadSearchBar";
@@ -104,7 +103,7 @@ export function LeadsView() {
         <LeadListView
           leads={filtered}
           onEdit={id => setEditingLead(leads.find(l => l.id === id) ?? null)}
-          onDelete={id => deleteOpp(id, setLeads, "Delete this lead?")}
+          onDelete={id => setLeads(prev => prev.filter(l => l.id !== id))}
           onConvert={id => setLeads(prev => prev.map(l => l.id === id ? { ...l, status: "converted" } : l))}
         />
       </div>
