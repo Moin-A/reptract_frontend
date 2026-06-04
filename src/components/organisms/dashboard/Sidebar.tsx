@@ -7,6 +7,7 @@ import { C } from "./tokens";
 import { useDashboard } from "./DashboardContext";
 import { STAGES } from "./opportunities/stages";
 import { CATEGORIES } from "./accounts/categories";
+import { LEAD_STATUSES } from "./leads/statuses";
 
 type RecentItemDef = { type: string; name: string };
 
@@ -90,6 +91,12 @@ export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: Recent
         {activeTab === "Accounts" && (
           <SidebarSection heading="Account Categories" divider>
             <AccountCategoriesSection />
+          </SidebarSection>
+        )}
+
+        {activeTab === "Leads" && (
+          <SidebarSection heading="Lead Status" divider>
+            <LeadStatusSection />
           </SidebarSection>
         )}
 
@@ -331,6 +338,50 @@ function OpportunityStagesSection() {
       </div>
       <div style={{ fontSize: 11.5, color: C.ok, marginTop: 2, textAlign: "right" }}>
         Pipeline value: ${(pipeline / 1000).toFixed(0)}K
+      </div>
+    </div>
+  );
+}
+
+function LeadStatusSection() {
+  const { leadStatusFilter, setLeadStatusFilter, leadCountByStatus } = useDashboard();
+
+  function toggle(key: string) {
+    setLeadStatusFilter(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  }
+
+  const total = Object.values(leadCountByStatus).reduce((sum, n) => sum + n, 0);
+
+  return (
+    <div>
+      {LEAD_STATUSES.map(s => {
+        const active = leadStatusFilter.includes(s.key);
+        const count  = leadCountByStatus[s.key] ?? 0;
+        return (
+          <div key={s.key} onClick={() => toggle(s.key)}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 2px", fontSize: 13, cursor: "pointer", borderRadius: 6, transition: "background 120ms" }}
+            onMouseEnter={e => { e.currentTarget.style.background = C.line; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+              <div style={{ width: 14, height: 14, borderRadius: 3, border: `1.5px solid ${active ? C.accent : C.ink2}`, background: active ? C.accent : "transparent", display: "grid", placeItems: "center", flexShrink: 0, transition: "background 120ms, border-color 120ms" }}>
+                {active && (
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round">
+                    <path d="m5 12 4.5 4.5L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span style={{ width: 8, height: 8, borderRadius: 8, background: s.color, flexShrink: 0 }} />
+              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.label}</span>
+            </div>
+            <span style={{ fontSize: 12, color: C.muted2, background: "white", border: `1px solid ${C.line}`, borderRadius: 100, padding: "1px 8px", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{count}</span>
+          </div>
+        );
+      })}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 10, borderTop: `1px solid ${C.line}`, marginTop: 8 }}>
+        <span style={{ fontSize: 12, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Leads</span>
+        <span style={{ fontSize: 18, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{total}</span>
       </div>
     </div>
   );

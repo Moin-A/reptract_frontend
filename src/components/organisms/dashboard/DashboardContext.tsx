@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode, type 
 import { type Task, type User, type Group } from "@/lib/types";
 import { ALL_STAGE_KEYS } from "./opportunities/stages";
 import { ALL_CAT_KEYS } from "./accounts/categories";
+import { ALL_LEAD_STATUS_KEYS } from "./leads/statuses";
 
 export type { User };
 
@@ -30,6 +31,12 @@ interface DashboardContextValue {
   incrementAcctCreate: () => void;
   acctExportSignal:    number;
   incrementAcctExport: () => void;
+  leadStatusFilter:     string[];
+  setLeadStatusFilter:  Dispatch<SetStateAction<string[]>>;
+  leadCountByStatus:    Record<string, number>;
+  setLeadCountByStatus: Dispatch<SetStateAction<Record<string, number>>>;
+  leadCreateSignal:    number;
+  incrementLeadCreate: () => void;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -48,9 +55,13 @@ export function DashboardProvider({ children, initialTasks = {}, initialUsers = 
   const [acctExportSignal, setAcctExportSignal] = useState(0);
   const incrementAcctCreate = useCallback(() => setAcctCreateSignal(s => s + 1), []);
   const incrementAcctExport = useCallback(() => setAcctExportSignal(s => s + 1), []);
+  const [leadStatusFilter,    setLeadStatusFilter]    = useState<string[]>(ALL_LEAD_STATUS_KEYS);
+  const [leadCountByStatus,   setLeadCountByStatus]   = useState<Record<string, number>>({});
+  const [leadCreateSignal,    setLeadCreateSignal]    = useState(0);
+  const incrementLeadCreate = useCallback(() => setLeadCreateSignal(s => s + 1), []);
 
   return (
-    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers, oppStageFilter, setOppStageFilter, acctCatFilter, setAcctCatFilter, groups, setGroups, acctCountByCategory, setAcctCountByCategory, acctCreateSignal, incrementAcctCreate, acctExportSignal, incrementAcctExport }}>
+    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers, oppStageFilter, setOppStageFilter, acctCatFilter, setAcctCatFilter, groups, setGroups, acctCountByCategory, setAcctCountByCategory, acctCreateSignal, incrementAcctCreate, acctExportSignal, incrementAcctExport, leadStatusFilter, setLeadStatusFilter, leadCountByStatus, setLeadCountByStatus, leadCreateSignal, incrementLeadCreate }}>
       {children}
     </DashboardContext.Provider>
   );

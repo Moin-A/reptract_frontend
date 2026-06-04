@@ -7,6 +7,7 @@ import Dashboard from "./index";
 import CampaignDashboard from "./CampaignDashboard";
 import { OpportunitiesView } from "./opportunities";
 import { AccountsView } from "./accounts";
+import { LeadsView } from "./leads";
 
 const TAB_TITLES: Record<string, string> = {
   Dashboard:     "Dashboards",
@@ -20,7 +21,7 @@ const TAB_TITLES: Record<string, string> = {
 };
 
 export function ActiveView() {
-  const { activeTab, incrementAcctCreate, incrementAcctExport } = useDashboard();
+  const { activeTab, incrementAcctCreate, incrementAcctExport, incrementLeadCreate } = useDashboard();
 
   const subtitle = useMemo(() => {
     const d = new Date();
@@ -35,7 +36,7 @@ export function ActiveView() {
       <PageHeader
         title={TAB_TITLES[activeTab] ?? activeTab}
         subtitle={subtitle}
-        onNewRecord={activeTab === "Accounts" ? incrementAcctCreate : undefined}
+        onNewRecord={activeTab === "Accounts" ? incrementAcctCreate : activeTab === "Leads" ? incrementLeadCreate : undefined}
         onExport={activeTab === "Accounts" ? incrementAcctExport : undefined}
       />
       {activeTab === "Dashboard"     && <Dashboard />}
@@ -43,6 +44,7 @@ export function ActiveView() {
       {activeTab === "Tasks"         && <Dashboard />}
       {activeTab === "Opportunities" && <OpportunitiesView />}
       {activeTab === "Accounts"      && <AccountsView />}
+      {activeTab === "Leads"         && <LeadsView />}
     </main>
   );
 }

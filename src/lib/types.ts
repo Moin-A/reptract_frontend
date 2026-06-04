@@ -1,5 +1,6 @@
 import type { StageKey } from "@/components/organisms/dashboard/opportunities/stages";
 import type { AccountCategoryKey } from "@/components/organisms/dashboard/accounts/categories";
+import type { LeadStatusKey, LeadSourceKey } from "@/components/organisms/dashboard/leads/statuses";
 
 // ── User ──────────────────────────────────────────────────────────
 export interface User {
@@ -64,6 +65,34 @@ export type Account = {
   assigned_to?: string | null;
   billing_address?:  Address | null;
   shipping_address?: Address | null;
+};
+
+// ── Lead ──────────────────────────────────────────────────────────
+export type Lead = {
+  id:           number;
+  first_name:   string;
+  last_name:    string;
+  name:         string;        // derived: first_name + " " + last_name
+  status:       LeadStatusKey;
+  source:       LeadSourceKey;
+  title?:       string;
+  company?:     string;
+  email?:       string;
+  phone?:       string;
+  alt_email?:   string;
+  mobile?:      string;
+  referred_by?: string;
+  do_not_call?: boolean;
+  rating:       number;
+  tags?:        string[];
+  assigned_to?: string | null;   // display name
+  assignee_id?: number | null;   // numeric FK sent to backend
+  campaign?:    string;
+  website?:     string;
+  linkedin?:    string;
+  facebook?:    string;
+  user:         string;
+  daysAgo:      number;
 };
 
 // ── Opportunity ───────────────────────────────────────────────────
