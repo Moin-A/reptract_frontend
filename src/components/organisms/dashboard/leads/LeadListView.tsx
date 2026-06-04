@@ -105,23 +105,26 @@ export function LeadListView({ leads, onEdit, onDelete, onConvert }: Props) {
 
             {/* Hover action buttons */}
             <div style={{
-              display: "flex", gap: 6, flexShrink: 0,
+              display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
               opacity: isHovered ? 1 : 0,
               pointerEvents: isHovered ? "auto" : "none",
               transition: "opacity 120ms",
             }}>
               <ActionBtn
                 label="Convert"
-                hoverColor={C.ok}
+                color={C.ok}
                 onClick={e => { e.stopPropagation(); onConvert(lead.id); }}
               />
+              <span style={{ color: C.line, fontSize: 12 }}>|</span>
               <ActionBtn
                 label="Edit"
+                color={C.ink2}
                 onClick={e => { e.stopPropagation(); onEdit(lead.id); }}
               />
+              <span style={{ color: C.line, fontSize: 12 }}>|</span>
               <ActionBtn
                 label="Delete"
-                hoverColor={C.err}
+                color={C.err}
                 onClick={e => {
                   e.stopPropagation();
                   if (confirm(`Delete "${lead.name || `${lead.first_name} ${lead.last_name}`}"?`)) onDelete(lead.id);
@@ -135,20 +138,11 @@ export function LeadListView({ leads, onEdit, onDelete, onConvert }: Props) {
   );
 }
 
-function ActionBtn({ label, hoverColor, onClick }: { label: string; hoverColor?: string; onClick: (e: React.MouseEvent) => void }) {
-  const [hov, setHov] = useState(false);
+function ActionBtn({ label, color, onClick }: { label: string; color: string; onClick: (e: React.MouseEvent) => void }) {
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        padding: "4px 9px", border: `1px solid ${hov && hoverColor ? hoverColor : hov ? C.ink2 : C.line}`,
-        borderRadius: 6, fontSize: 12,
-        color: hov && hoverColor ? hoverColor : hov ? C.ink : C.muted,
-        background: "white", cursor: "pointer",
-        transition: "color 120ms, border-color 120ms",
-      }}
+      style={{ fontSize: 12, color, background: "none", border: "none", cursor: "pointer", padding: 0 }}
     >
       {label}
     </button>
