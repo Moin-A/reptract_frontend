@@ -91,6 +91,7 @@ export type Lead = {
   website?:     string;
   linkedin?:    string;
   facebook?:    string;
+  business_address?: Address | null;
   user:         string;
   daysAgo:      number;
 };

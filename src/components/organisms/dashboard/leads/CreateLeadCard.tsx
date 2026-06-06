@@ -103,6 +103,13 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
     setFWebsite(editLead.website ?? "");
     setFLinkedin(editLead.linkedin ?? "");
     setFFacebook(editLead.facebook ?? "");
+    const addr = editLead.business_address;
+    setFStreet1(addr?.street1 ?? "");
+    setFStreet2(addr?.street2 ?? "");
+    setFCity(addr?.city ?? "");
+    setFAddrState(addr?.state ?? "");
+    setFZip(addr?.zipcode ?? "");
+    setFCountry(addr?.country ?? "");
     setFormOpen(true);
   }, [editLead]);
 
@@ -126,33 +133,36 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
     setServerError(null);
 
     const body = {
+      lead: {
       first_name:   fFirst.trim(),
       last_name:    fLast.trim(),
       status:       fStatus,
       source:       fSource,
-      email:        fEmail   || null,
-      phone:        fPhone   || null,
       tags:         fTags,
       assignee_id:  fAssigned ? parseInt(fAssigned) : null,
       rating:       fRating,
       campaign:     fCampaign || null,
-      title:        fTitle    || null,
-      company:      fCompany  || null,
-      alt_email:    fAltEmail || null,
-      mobile:       fMobile   || null,
       referred_by:  fReferredBy || null,
       do_not_call:  fDoNotCall,
-      street1:      fStreet1  || null,
-      street2:      fStreet2  || null,
-      city:         fCity     || null,
-      state:        fAddrState || null,
-      zip:          fZip      || null,
-      country:      fCountry  || null,
+      permissions:  fPerm,
+      title:        fTitle    || null,
+      company:      fCompany  || null,
+      email:        fEmail    || null,
+      phone:        fPhone    || null,
+      alt_email:    fAltEmail || null,
+      mobile:       fMobile   || null,
       website:      fWebsite  || null,
       linkedin:     fLinkedin || null,
       facebook:     fFacebook || null,
-      permissions:  fPerm,
-    };
+      business_address_attributes: {
+        street1:    fStreet1  || null,
+        street2:    fStreet2  || null,
+        city:       fCity     || null,
+        state:      fAddrState || null,
+        zipcode:    fZip      || null,
+        country:    fCountry  || null,
+      },
+    }};
 
     const url    = editLead ? `/api/leads/${editLead.id}` : "/api/leads";
     const method = editLead ? "PATCH" : "POST";
@@ -167,8 +177,9 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
       setServerError({ title: editLead ? "Couldn't save changes" : "Couldn't create lead", body: msgs.length ? msgs.join(", ") : "The server returned an error." });
       return;
     }
-    if (editLead) onLeadUpdated?.(data as Lead);
-    else          onLeadCreated(data as Lead);
+    const saved = (data?.lead ?? data) as Lead;
+    if (editLead) onLeadUpdated?.(saved);
+    else          onLeadCreated(saved);
 
     setFSuccess(true);
     setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); onEditCancel?.(); }, 1200);

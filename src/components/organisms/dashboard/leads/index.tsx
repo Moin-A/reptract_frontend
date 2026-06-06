@@ -55,6 +55,13 @@ export function LeadsView() {
       return (a.daysAgo ?? 0) - (b.daysAgo ?? 0);
     });
 
+  async function handleDelete(id: number) {
+    const prev = leads;
+    setLeads(p => p.filter(l => l.id !== id));
+    const res = await fetch(`/api/leads/${id}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok) setLeads(prev); // rollback if the backend rejects
+  }
+
   const total      = leads.length;
   const newLeads   = leads.filter(l => l.status === "new").length;
   const qualified  = leads.filter(l => l.status === "contacted" || l.status === "converted").length;
@@ -103,7 +110,7 @@ export function LeadsView() {
         <LeadListView
           leads={filtered}
           onEdit={id => setEditingLead(leads.find(l => l.id === id) ?? null)}
-          onDelete={id => setLeads(prev => prev.filter(l => l.id !== id))}
+          onDelete={handleDelete}
           onConvert={id => setLeads(prev => prev.map(l => l.id === id ? { ...l, status: "converted" } : l))}
         />
       </div>
