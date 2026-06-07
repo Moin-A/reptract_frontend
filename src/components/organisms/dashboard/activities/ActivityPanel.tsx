@@ -24,7 +24,7 @@ const ActivityPanel = memo(function ActivityPanel() {
   const [page,       setPage]       = useState(1);
   const [show, setShow] = useState(0);
   const [by,   setBy]   = useState("")
-  const [when, setWhen] = useState(0);
+  const [when, setWhen] = useState(3);
 
   const fetchActivities = useCallback((p: number, s: number, b: string, w: number) => {
     const params = new URLSearchParams();
@@ -67,7 +67,7 @@ const ActivityPanel = memo(function ActivityPanel() {
       <ActivityFilterBar
         show={show} by={by} when={when} users={users}
         onShowChange={setShow} onByChange={setBy} onWhenChange={setWhen}
-        onReset={() => { setShow(0); setBy(""); setWhen(0); }}
+        onReset={() => { setShow(0); setBy(""); setWhen(3); }}
       />
 
       {groups.map((group, gi) => (
