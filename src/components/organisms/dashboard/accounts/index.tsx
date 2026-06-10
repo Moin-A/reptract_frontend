@@ -50,25 +50,14 @@ export function AccountsView() {
     if (acctCreateSignal > 0) setEditingAccount(null);
   }, [acctCreateSignal]);
 
-  function handleExport() {
-    if (accounts.length === 0) return;
-    const headers = ["Name", "Category", "Email", "Phone", "Assigned To", "Rating", "Contacts", "Opps"];
-    const rows = accounts.map(a => [
-      `"${(a.name ?? "").replace(/"/g, '""')}"`,
-      a.category ?? "",
-      a.email ?? "",
-      a.phone ?? "",
-      a.assigned_to ?? "",
-      String(a.rating ?? 0),
-      String(a.contacts ?? 0),
-      String(a.opps ?? 0),
-    ].join(","));
-    const csv = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+  async function handleExport() {
+    const res = await fetch("/api/accounts/export", { credentials: "include" });
+    if (!res.ok) return;
+    const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href     = url;
-    link.download = "accounts.csv";
+    link.download = "accounts.xls";
     link.click();
     URL.revokeObjectURL(url);
   }
