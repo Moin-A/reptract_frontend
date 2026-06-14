@@ -1,14 +1,16 @@
-import { Download, Plus } from "lucide-react";
+import { memo } from "react";
+import { Download, Plus, Upload } from "lucide-react";
 import { C } from "@/components/organisms/dashboard/tokens";
 
 type PageHeaderProps = {
   title: string;
   subtitle: string;
   onExport?: () => void;
+  onImport?: () => void;
   onNewRecord?: () => void;
 };
 
-export function PageHeader({ title, subtitle, onExport, onNewRecord }: PageHeaderProps) {
+export const PageHeader = memo(function PageHeader({ title, subtitle, onExport, onImport, onNewRecord }: PageHeaderProps) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
       <div>
@@ -16,12 +18,13 @@ export function PageHeader({ title, subtitle, onExport, onNewRecord }: PageHeade
         <div style={{ fontSize: 13, color: C.muted }}>{subtitle}</div>
       </div>
       <div style={{ display: "flex", gap: 10 }}>
+        {onImport && <GhostButton icon={<Upload size={14} />} label="Import" onClick={onImport} />}
         <GhostButton icon={<Download size={14} />} label="Export" onClick={onExport} />
         <PrimaryButton icon={<Plus size={14} />} label="New record" onClick={onNewRecord} />
       </div>
     </div>
   );
-}
+});
 
 type ButtonProps = {
   icon?: React.ReactNode;

@@ -21,7 +21,7 @@ const TAB_TITLES: Record<string, string> = {
 };
 
 export function ActiveView() {
-  const { activeTab, incrementAcctCreate, incrementAcctExport, incrementLeadCreate } = useDashboard();
+  const { activeTab, incrementAcctCreate, incrementAcctExport, incrementAcctImport, incrementLeadCreate } = useDashboard();
 
   const subtitle = useMemo(() => {
     const d = new Date();
@@ -38,6 +38,7 @@ export function ActiveView() {
         subtitle={subtitle}
         onNewRecord={activeTab === "Accounts" ? incrementAcctCreate : activeTab === "Leads" ? incrementLeadCreate : undefined}
         onExport={activeTab === "Accounts" ? incrementAcctExport : undefined}
+        onImport={activeTab === "Accounts" ? incrementAcctImport : undefined}
       />
       {activeTab === "Dashboard"     && <Dashboard />}
       {activeTab === "Campaigns"     && <CampaignDashboard />}
