@@ -19,10 +19,11 @@ export async function GET() {
     status: response.status,
     headers: {
       "Content-Type":
-        response.headers.get("Content-Type") ?? "application/vnd.ms-excel",
+        response.headers.get("Content-Type") ??
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition":
         response.headers.get("Content-Disposition") ??
-        'attachment; filename="accounts.xls"',
+        'attachment; filename="accounts.xlsx"',
     },
   });
 }
