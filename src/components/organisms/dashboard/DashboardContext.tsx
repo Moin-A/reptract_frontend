@@ -31,6 +31,8 @@ interface DashboardContextValue {
   incrementAcctCreate: () => void;
   acctExportSignal:    number;
   incrementAcctExport: () => void;
+  acctImportSignal:    number;
+  incrementAcctImport: () => void;
   leadStatusFilter:     string[];
   setLeadStatusFilter:  Dispatch<SetStateAction<string[]>>;
   leadCountByStatus:    Record<string, number>;
@@ -53,15 +55,17 @@ export function DashboardProvider({ children, initialTasks = {}, initialUsers = 
   const [acctCountByCategory, setAcctCountByCategory] = useState<Record<string, number>>({});
   const [acctCreateSignal, setAcctCreateSignal] = useState(0);
   const [acctExportSignal, setAcctExportSignal] = useState(0);
+  const [acctImportSignal, setAcctImportSignal] = useState(0);
   const incrementAcctCreate = useCallback(() => setAcctCreateSignal(s => s + 1), []);
   const incrementAcctExport = useCallback(() => setAcctExportSignal(s => s + 1), []);
+  const incrementAcctImport = useCallback(() => setAcctImportSignal(s => s + 1), []);
   const [leadStatusFilter,    setLeadStatusFilter]    = useState<string[]>(ALL_LEAD_STATUS_KEYS);
   const [leadCountByStatus,   setLeadCountByStatus]   = useState<Record<string, number>>({});
   const [leadCreateSignal,    setLeadCreateSignal]    = useState(0);
   const incrementLeadCreate = useCallback(() => setLeadCreateSignal(s => s + 1), []);
 
   return (
-    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers, oppStageFilter, setOppStageFilter, acctCatFilter, setAcctCatFilter, groups, setGroups, acctCountByCategory, setAcctCountByCategory, acctCreateSignal, incrementAcctCreate, acctExportSignal, incrementAcctExport, leadStatusFilter, setLeadStatusFilter, leadCountByStatus, setLeadCountByStatus, leadCreateSignal, incrementLeadCreate }}>
+    <DashboardContext.Provider value={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, tasks, setTasks, nextId, setNextId, users, setUsers, oppStageFilter, setOppStageFilter, acctCatFilter, setAcctCatFilter, groups, setGroups, acctCountByCategory, setAcctCountByCategory, acctCreateSignal, incrementAcctCreate, acctExportSignal, incrementAcctExport, acctImportSignal, incrementAcctImport, leadStatusFilter, setLeadStatusFilter, leadCountByStatus, setLeadCountByStatus, leadCreateSignal, incrementLeadCreate }}>
       {children}
     </DashboardContext.Provider>
   );

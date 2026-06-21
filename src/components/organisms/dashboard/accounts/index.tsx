@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
 import { type Account } from "@/lib/types";
@@ -9,6 +9,7 @@ import { AccountSearchBar } from "./AccountSearchBar";
 import { AccountListView } from "./AccountListView";
 import { AccountGridView } from "./AccountGridView";
 import { ConfirmDialog } from "@/components/molecules/ConfirmDialog";
+import { FormErrorBanner } from "@/components/ui/error_banner";
 
 export function AccountsView() {
   const {
@@ -16,6 +17,7 @@ export function AccountsView() {
     setAcctCountByCategory,
     acctCreateSignal,
     acctExportSignal,
+    acctImportSignal,
   } = useDashboard();
 
   const [accounts,        setAccounts]        = useState<Account[]>([]);
@@ -27,7 +29,9 @@ export function AccountsView() {
   const [sort,            setSort]            = useState<"newest" | "oldest" | "name">("newest");
   const [advancedCategory,   setAdvancedCategory]   = useState("");
   const [advancedMinRating,  setAdvancedMinRating]  = useState(0);
+  const [error,           setError]           = useState<string[] | null>(null);
   const [pendingDelete,      setPendingDelete]      = useState<Account | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/accounts", { credentials: "include" })
@@ -68,6 +72,32 @@ export function AccountsView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acctExportSignal]);
 
+  // "Import" button in PageHeader triggers this — opens the file picker.
+  // A counter (not a boolean) guarantees every click re-runs this effect.
+  useEffect(() => {
+    if (acctImportSignal > 0) fileInputRef.current?.click();
+  }, [acctImportSignal]);
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // reset so the same file can be re-selected
+    if (!file) return;
+
+    const body = new FormData();
+    body.append("file", file);
+    // Browser sets the multipart Content-Type (with boundary) automatically.
+    const res = await fetch("/api/accounts/import", { method: "POST", body, credentials: "include" });
+    if (!res.ok) {
+      const error = await res.json();
+      setError(error.message);
+      return;
+    }
+
+    // Reload accounts so imported rows show up.
+    const data = await fetch("/api/accounts", { credentials: "include" }).then(r => r.json());
+    setAccounts(data.accounts ?? []);
+  }
+
   async function confirmDelete() {
     if (!pendingDelete) return;
     const id = pendingDelete.id;
@@ -106,6 +136,14 @@ export function AccountsView() {
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xls,application/vnd.ms-excel"
+        onChange={handleImport}
+        style={{ display: "none" }}
+      />
+      <FormErrorBanner error={ error ? { title: "Error", body: error.join(", ") } : null} />
       {/* KPI strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {[
