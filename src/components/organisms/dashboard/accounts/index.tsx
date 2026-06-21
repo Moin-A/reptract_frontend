@@ -9,6 +9,7 @@ import { AccountSearchBar } from "./AccountSearchBar";
 import { AccountListView } from "./AccountListView";
 import { AccountGridView } from "./AccountGridView";
 import { ConfirmDialog } from "@/components/molecules/ConfirmDialog";
+import { FormErrorBanner } from "@/components/ui/error_banner";
 
 export function AccountsView() {
   const {
@@ -28,6 +29,7 @@ export function AccountsView() {
   const [sort,            setSort]            = useState<"newest" | "oldest" | "name">("newest");
   const [advancedCategory,   setAdvancedCategory]   = useState("");
   const [advancedMinRating,  setAdvancedMinRating]  = useState(0);
+  const [error,           setError]           = useState<string[] | null>(null);
   const [pendingDelete,      setPendingDelete]      = useState<Account | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,7 +87,11 @@ export function AccountsView() {
     body.append("file", file);
     // Browser sets the multipart Content-Type (with boundary) automatically.
     const res = await fetch("/api/accounts/import", { method: "POST", body, credentials: "include" });
-    if (!res.ok) return;
+    if (!res.ok) {
+      const error = await res.json();
+      setError(error.message);
+      return;
+    }
 
     // Reload accounts so imported rows show up.
     const data = await fetch("/api/accounts", { credentials: "include" }).then(r => r.json());
@@ -137,7 +143,7 @@ export function AccountsView() {
         onChange={handleImport}
         style={{ display: "none" }}
       />
-
+      <FormErrorBanner error={ error ? { title: "Error", body: error.join(", ") } : null} />
       {/* KPI strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {[
