@@ -10,6 +10,7 @@ import { AccountListView } from "./AccountListView";
 import { AccountGridView } from "./AccountGridView";
 import { ConfirmDialog } from "@/components/molecules/ConfirmDialog";
 import { FormErrorBanner } from "@/components/ui/error_banner";
+import { FormSuccessBanner } from "@/components/ui/success_banner";
 
 export function AccountsView() {
   const {
@@ -32,6 +33,7 @@ export function AccountsView() {
   const [error,           setError]           = useState<string[] | null>(null);
   const [pendingDelete,      setPendingDelete]      = useState<Account | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [success, setSuccess] = useState<{ title: string; body: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/accounts", { credentials: "include" })
@@ -61,7 +63,7 @@ export function AccountsView() {
     const url  = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href     = url;
-    link.download = "accounts.xls";
+    link.download = "accounts.xlsx";
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -92,6 +94,8 @@ export function AccountsView() {
       setError(error.message);
       return;
     }
+
+    setSuccess({ title: "Success", body: "Accounts imported successfully." });
 
     // Reload accounts so imported rows show up.
     const data = await fetch("/api/accounts", { credentials: "include" }).then(r => r.json());
@@ -139,11 +143,11 @@ export function AccountsView() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".xls,application/vnd.ms-excel"
+        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         onChange={handleImport}
         style={{ display: "none" }}
       />
-      <FormErrorBanner error={ error ? { title: "Error", body: error.join(", ") } : null} />
+      
       {/* KPI strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {[
@@ -181,7 +185,8 @@ export function AccountsView() {
           </div>
         ))}
       </div>
-
+      <FormErrorBanner error={ error ? { title: "Error", body: error.join(", ") } : null} />
+      <FormSuccessBanner onDismiss={() => setSuccess(null)} message = { success } autoDismissMs={3000} />
       <CreateAccountCard
         view={view}
         onViewChange={setView}
