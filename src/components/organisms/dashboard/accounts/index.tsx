@@ -185,7 +185,7 @@ export function AccountsView() {
           </div>
         ))}
       </div>
-      <FormErrorBanner error={ error ? { title: "Error", body: error.join(", ") } : null} />
+      <FormErrorBanner onDismiss={() => setError(null)} error={ error ? { title: "Error", body: error.join(", ") } : null} />
       <FormSuccessBanner onDismiss={() => setSuccess(null)} message = { success } autoDismissMs={3000} />
       <CreateAccountCard
         view={view}

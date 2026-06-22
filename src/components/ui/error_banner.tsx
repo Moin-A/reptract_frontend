@@ -338,6 +338,16 @@ export function FormErrorBanner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchKey]);
 
+  useEffect(() => {
+    if (!error || !onDismiss ) return;
+
+    const timer = window.setTimeout(() => {
+      onDismiss();
+    }, 3000);
+
+    return () => window.clearTimeout(timer);
+  }, [error, onDismiss]);
+
   if (!error) return null;
 
   const t = THEMES[theme];
