@@ -8,6 +8,7 @@ import { useDashboard } from "./DashboardContext";
 import { STAGES } from "./opportunities/stages";
 import { CATEGORIES } from "./accounts/categories";
 import { LEAD_STATUSES } from "./leads/statuses";
+import CampaignSideBarMain from "@/components/organisms/dashboard/campaigns/CapaignSideBar"
 
 type RecentItemDef = { type: string; name: string };
 
@@ -100,7 +101,11 @@ export function Sidebar({ recentItems = DEFAULT_RECENT }: { recentItems?: Recent
           </SidebarSection>
         )}
 
-
+        {activeTab === "Campaigns" && (
+          <SidebarSection heading="Campaigns" divider>
+            <CampaignSideBarMain />
+          </SidebarSection>
+        )}
 
         <SidebarSection heading="Global lists" divider>
           {GLOBAL_LISTS.map(label => <SidebarNavItem key={label} label={label} />)}

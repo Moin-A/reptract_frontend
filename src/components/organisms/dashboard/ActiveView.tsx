@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useDashboard } from "./DashboardContext";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import Dashboard from "./index";
-import CampaignDashboard from "./CampaignDashboard";
+import CampaignDashboard from "./campaigns/CampaignDashboard";
 import { OpportunitiesView } from "./opportunities";
 import { AccountsView } from "./accounts";
 import { LeadsView } from "./leads";
