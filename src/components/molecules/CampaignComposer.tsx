@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { PlatformKey } from "@/lib/types";
 import { ACCOUNTS, PLATFORMS, CARD_STYLE } from "@/lib/campaigns";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { PlatformBadge } from "@/components/atoms/PlatformBadge";
 import { CampaignSectionLabel } from "@/components/atoms/CampaignSectionLabel";
 import { CountRing } from "@/components/atoms/CountRing";
-import { ChangeEvent } from "react";
+import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
 
 
 export function CampaignComposer() {
@@ -15,6 +15,8 @@ export function CampaignComposer() {
   const [caption, setCaption]   = useState("");
   const [link, setLink]         = useState("");
   const [selected, setSelected] = useState<Set<PlatformKey>>(new Set(["mastodon", "x"]));
+  const useFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [error, setError] = useState<FormError | null>(null);
 
   const limit = useMemo(() => {
     const limits = [...selected].map(p => PLATFORMS[p].limit);
@@ -31,12 +33,34 @@ export function CampaignComposer() {
     });
   }
 
-  function handleFileChange(event: ChangeEvent<HTMLInputElement, HTMLInputElement>): void {
-   debugger;
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>): Promise<void> {
+    const media = event.target.files?.[0];
+    event.target.value = "";
+    if (media) {
+      setError(null);
+      const body = new FormData();
+      body.append("campaign_post[media]", media);
+      body.append("campaign_post[content]", caption);
+      body.append("campaign_post[kind]", kind);
+      const response = await fetch("/api/campaign/posts", { method: "POST", body });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        const detail = Array.isArray(data?.errors) ? data.errors.join(", ") : data?.error;
+        setError({ title: "Couldn't upload post", body: detail ?? "The server returned an error." });
+      }
+    }
   }
 
   return (
     <section style={{ ...CARD_STYLE, overflow: "hidden" }}>
+      <input type="file" ref={useFileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
+
+      {error && (
+        <div style={{ padding: "16px 20px 0" }}>
+          <FormErrorBanner error={error} onDismiss={() => setError(null)} />
+        </div>
+      )}
+
       {/* header */}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: `1px solid ${C.line}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 600 }}>
@@ -81,8 +105,8 @@ export function CampaignComposer() {
           </div>
 
           <CampaignSectionLabel>Media</CampaignSectionLabel>
-      
-          <div className="cc-dropzone" style={{
+
+          <div className="cc-dropzone" onClick={() => useFileInputRef.current?.click()} style={{
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
             padding: "26px", border: `1.5px dashed ${C.line}`, borderRadius: 14, cursor: "pointer", marginBottom: 20,
           }}>

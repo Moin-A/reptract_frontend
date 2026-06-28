@@ -6,8 +6,13 @@ export class ReptrackApi {
   }
 
   async request(endpoint: string, options: Record<string, any> = {}): Promise<any> {
+    // For FormData, omit Content-Type so fetch generates
+    // `multipart/form-data; boundary=…` itself — the boundary is required for
+    // Rails to parse the parts (setting it by hand drops the boundary and Rails
+    // mis-parses the body, e.g. "query parameters exceed limit").
+    const isFormData = options.body instanceof FormData;
     const headers = {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       Accept: "application/json",
       ...options.headers,
     };
