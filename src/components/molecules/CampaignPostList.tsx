@@ -27,10 +27,12 @@ export function CampaignPostList() {
   }
 
   const filtered = filteredPosts.filter(p => {
-    debugger;
     if (tab === "All") return true;
     if (tab === "Drafts") return p.status === "draft";
-    return p.publications.some(x => x.status === tab.toLowerCase());
+    if (tab === "Pending") return p.publications.some(x => x.status === "ready" || x.status === "wip");
+    if (tab === "Published") return p.publications.some(x => x.status === "published");
+    if (tab === "Failed") return p.publications.some(x => x.status === "failed");
+    return false;
   });
 
 console.log("Filtered posts:", filtered);

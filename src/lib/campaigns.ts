@@ -35,7 +35,10 @@ export const MONTH: MonthStat[] = [
   { label: "Total reach",     value: "21.4K" },
 ];
 
-export type PubStatus = "published" | "pending" | "failed" | "draft";
+// Post-level status (Campaign::Post enum)
+export type PostStatus = "draft" | "published";
+// Per-account publication status (Campaign::Publication)
+export type PublicationStatus = "ready" | "wip" | "published" | "failed" | "skipped";
 export type PostKind = "post" | "ad" | "draft";
 
 export type PostMedia = { id: number; filename: string; url: string };
@@ -47,9 +50,9 @@ export type Post = {
   body?: string;           // legacy mock field
   time?: string;
   media: PostMedia[];
-  publications: { id: number; status: PubStatus; platform: PlatformKey }[];
+  publications: { id: number; status: PublicationStatus; platform: PlatformKey }[];
   draft?: boolean;
-  status?: PubStatus;
+  status?: PostStatus;
 };
 
 export const POSTS: Post[] = [
@@ -58,7 +61,7 @@ export const POSTS: Post[] = [
   { kind: "ad", time: "5h ago", media: [], body: "Summer Shred challenge — 8 weeks, real coaching, measurable results. Join 200+ members already signed up. reptrack.io/shred",
     publications: [{ id: 3, status: "published", platform: "x" }, { id: 4, status: "failed", platform: "instagram" }] },
   { kind: "post", time: "just now", media: [], body: "Throwback to last weekend's deadlift PR board. Who's breaking a record this week?",
-    publications: [{ id: 5, status: "pending", platform: "mastodon" }, { id: 6, status: "pending", platform: "instagram" }] },
+    publications: [{ id: 5, status: "wip", platform: "mastodon" }, { id: 6, status: "ready", platform: "instagram" }] },
   { kind: "draft", time: "1d ago", media: [], draft: true, body: "Draft: member spotlight on Marco — down 30lbs in 4 months. Need to grab his before/after photos.", publications: [] },
 ];
 
@@ -66,11 +69,12 @@ export const POSTS: Post[] = [
 /* publication status styling                                          */
 /* ------------------------------------------------------------------ */
 
-export const STATUS: Record<PubStatus, { c: string; bg: string }> = {
-  published: { c: C.ok,     bg: "#ECFDF5" },
-  pending:   { c: C.warn,   bg: "#FBF6E7" },
-  failed:    { c: C.err,    bg: "#FCEEEC" },
-  draft:     { c: C.muted2, bg: "#F1F0EC" },
+export const STATUS: Record<PublicationStatus, { c: string; bg: string; label: string }> = {
+  ready:     { c: C.warn,   bg: "#FBF6E7", label: "Pending" },
+  wip:       { c: C.warn,   bg: "#FBF6E7", label: "Publishing" },
+  published: { c: C.ok,     bg: "#ECFDF5", label: "Published" },
+  failed:    { c: C.err,    bg: "#FCEEEC", label: "Failed" },
+  skipped:   { c: C.muted2, bg: "#F1F0EC", label: "Skipped" },
 };
 
 /* shared card surface used by the composer + posts cards */
