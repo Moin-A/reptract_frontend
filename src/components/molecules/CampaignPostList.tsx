@@ -10,15 +10,17 @@ import { Action } from "@/components/atoms/Action";
 const TABS = ["All", "Published", "Pending", "Failed", "Drafts"] as const;
 type Tab = typeof TABS[number];
 
-export function CampaignPostList() {
+type Props = { onEdit?: (post: Post) => void; refreshKey?: number };
+
+export function CampaignPostList({ onEdit, refreshKey }: Props) {
   const [tab, setTab] = useState<Tab>("All");
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    const response = fetch(`/api/campaign/posts`)
+    fetch(`/api/campaign/posts`)
       .then(res => res.json())
       .then(data => setFilteredPosts(data));
-  }, [tab]);
+  }, [tab, refreshKey]);
 
   async function handleDelete(id?: number) {
     if (!id) return;
@@ -78,9 +80,9 @@ console.log("Filtered posts:", filtered);
               </div>
               <div style={{ display: "flex", gap: 8, margin: "12px 0 0" }}>
                 {p.publications.some(x => x.status === "failed") && <Action color={C.err}>Retry failed</Action>}
-                {p.draft && <Action solid>Select accounts &amp; publish</Action>}
-                {p.draft && <Action>Edit</Action>}
-                {!p.draft && <Action>View</Action>}
+                {p.status === "draft" && <Action solid>Select accounts &amp; publish</Action>}
+                {p.status === "draft" && <Action onClick={() => onEdit?.(p)}>Edit</Action>}
+                {p.status !== "draft" && <Action onClick={() => onEdit?.(p)}>View</Action>}
                 <Action onClick={() => handleDelete(p.id)}>Delete</Action>
               </div>
             </div>

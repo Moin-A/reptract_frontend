@@ -19,16 +19,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const cookieStore = await cookies();
   const { id } = await params;
-  const body = await req.json();
   const api = new ReptrackApi();
 
-  const response = await api.request(`/campaign/posts/${id}`, {
+  // Stream the multipart request straight through (composer sends FormData).
+  const response = await fetch(`${api.baseUrl}/campaign/posts/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(body),
+    body: req.body,
+    duplex: "half",
+    credentials: "include",
     headers: {
       Cookie: cookieStore.toString(),
+      "Content-Type": req.headers.get("content-type") ?? "",
     },
-  });
+  } as RequestInit & { duplex: "half" });
 
   const data = await response.json();
   return Response.json(data, { status: response.status });

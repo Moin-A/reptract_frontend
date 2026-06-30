@@ -48,6 +48,7 @@ export type Post = {
   kind: PostKind;
   content?: string;        // from the API
   body?: string;           // legacy mock field
+  url?: string;            // optional link (from the API)
   time?: string;
   media: PostMedia[];
   publications: { id: number; status: PublicationStatus; platform: PlatformKey }[];

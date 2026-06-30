@@ -2,28 +2,43 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PlatformKey } from "@/lib/types";
-import { ACCOUNTS, PLATFORMS, CARD_STYLE } from "@/lib/campaigns";
+import { ACCOUNTS, PLATFORMS, CARD_STYLE, type Post } from "@/lib/campaigns";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { PlatformBadge } from "@/components/atoms/PlatformBadge";
 import { CampaignSectionLabel } from "@/components/atoms/CampaignSectionLabel";
 import { CountRing } from "@/components/atoms/CountRing";
-import { RemoveButton } from "@/components/atoms/RemoveButton";
+import { CaptionInput } from "@/components/atoms/CaptionInput";
+import { CaptionToolbar } from "@/components/atoms/CaptionToolbar";
+import { MediaThumbnail } from "@/components/atoms/MediaThumbnail";
 import { Dropzone } from "@/components/ui/dropzone";
 import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
 
 
-export function CampaignComposer() {
-  const [kind, setKind]         = useState<"post" | "ad">("post");
-  const [caption, setCaption]   = useState("");
-  const [link, setLink]         = useState("");
+type Props = { editingPost?: Post | null; onSaved?: () => void };
+
+export function CampaignComposer({ editingPost = null, onSaved }: Props) {
+  // Initialised from editingPost. The parent remounts this via `key` when the
+  // edited post changes, so these initial values are always correct.
+  // (Existing media isn't loaded into the File upload slot — pick a new file to replace.)
+  const [kind, setKind]         = useState<"post" | "ad">(editingPost?.kind === "ad" ? "ad" : "post");
+  const [caption, setCaption]   = useState(editingPost?.content ?? editingPost?.body ?? "");
+  const [link, setLink]         = useState(editingPost?.url ?? "");
   const [selected, setSelected] = useState<Set<PlatformKey>>(new Set(["mastodon", "x"]));
   const useFileInputRef = useRef<HTMLInputElement | null>(null);
   const [error, setError] = useState<FormError | null>(null);
   const [media, setMedia] = useState<File | null>(null);
+  // The post's already-uploaded image (display-only); a newly picked File takes precedence.
+  const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(editingPost?.media?.[0]?.url ?? null);
 
-  // Preview the staged image locally; revoke the blob URL on change/unmount.
-  const mediaUrl = useMemo(() => (media ? URL.createObjectURL(media) : null), [media]);
-  useEffect(() => () => { if (mediaUrl) URL.revokeObjectURL(mediaUrl); }, [mediaUrl]);
+  function resetForm() {
+    setCaption(""); setLink(""); setKind("post"); setMedia(null); setExistingMediaUrl(null);
+  }
+
+  // Blob preview for a newly-picked File (revoked on change/unmount); otherwise
+  // fall back to the existing image URL.
+  const filePreview = useMemo(() => (media ? URL.createObjectURL(media) : null), [media]);
+  useEffect(() => () => { if (filePreview) URL.revokeObjectURL(filePreview); }, [filePreview]);
+  const previewUrl = filePreview ?? existingMediaUrl;
 
   const limit = useMemo(() => {
     const limits = [...selected].map(p => PLATFORMS[p].limit);
@@ -58,14 +73,19 @@ export function CampaignComposer() {
     body.append("campaign_post[url]", link);
     if (media) body.append("campaign_post[media]", media);
 
-    const response = await fetch("/api/campaign/posts", { method: "POST", body });
+    const editId = editingPost?.id;
+    const response = await fetch(
+      editId != null ? `/api/campaign/posts/${editId}` : "/api/campaign/posts",
+      { method: editId != null ? "PATCH" : "POST", body },
+    );
     if (!response.ok) {
       const data = await response.json().catch(() => null);
       const detail = Array.isArray(data?.errors) ? data.errors.join(", ") : data?.error;
-      setError({ title: "Couldn't save draft", body: detail ?? "The server returned an error." });
+      setError({ title: editId != null ? "Couldn't update draft" : "Couldn't save draft", body: detail ?? "The server returned an error." });
       return;
     }
-    setMedia(null);
+    resetForm();
+    onSaved?.();
   }
 
   return (
@@ -103,32 +123,16 @@ export function CampaignComposer() {
       <div className="cc-compose-grid" style={{ padding: 20 }}>
         {/* left: caption + media + link */}
         <div>
-          <textarea
-            className="cc-field"
-            value={caption}
-            onChange={e => setCaption(e.target.value)}
-            placeholder="What's happening at your gym? Write your caption…"
-            style={{
-              width: "100%", minHeight: 140, resize: "vertical", padding: 14, fontSize: 14.5,
-              lineHeight: 1.55, color: C.ink, background: C.surface, border: `1px solid ${C.line}`,
-              borderRadius: 12, fontFamily: "inherit",
-            }}
-          />
+          <CaptionInput value={caption} onChange={setCaption} placeholder="What's happening at your gym? Write your caption…" />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "10px 2px 20px" }}>
-            <div style={{ display: "flex", gap: 14, color: C.muted2, fontSize: 16 }}>
-              <span style={{ cursor: "pointer" }}>☺</span><span style={{ cursor: "pointer" }}>@</span><span style={{ cursor: "pointer" }}>#</span>
-            </div>
+            <CaptionToolbar />
             <CountRing used={caption.length} limit={limit} />
           </div>
 
           <CampaignSectionLabel>Media</CampaignSectionLabel>
 
-          {media && mediaUrl ? (
-            <div style={{ position: "relative", width: 96, height: 96, marginBottom: 20 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- transient blob preview, not optimizable by next/image */}
-              <img src={mediaUrl} alt={media.name} style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 12, border: `1px solid ${C.line}` }} />
-              <RemoveButton onClick={() => setMedia(null)} label="Remove image" />
-            </div>
+          {previewUrl ? (
+            <MediaThumbnail src={previewUrl} alt={media?.name} onRemove={() => { setMedia(null); setExistingMediaUrl(null); }} />
           ) : (
             <Dropzone onClick={() => useFileInputRef.current?.click()} />
           )}
@@ -186,9 +190,12 @@ export function CampaignComposer() {
 
       {/* footer */}
       <footer style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderTop: `1px solid ${C.line}`, background: "#FAFAF7" }}>
-        <span style={{ fontSize: 13, color: C.muted }}>● Draft — not saved</span>
+        <span style={{ fontSize: 13, color: C.muted }}>{editingPost ? "● Editing draft" : "● Draft — not saved"}</span>
         <div style={{ display: "flex", gap: 10 }}>
-          <button className="cc-btn" onClick={saveDraft} style={{ padding: "9px 16px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, fontSize: 13.5, fontWeight: 600, cursor: "pointer", color: C.ink }}>Save draft</button>
+          {editingPost && (
+            <button className="cc-btn" onClick={() => { resetForm(); onSaved?.(); }} style={{ padding: "9px 16px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, fontSize: 13.5, fontWeight: 600, cursor: "pointer", color: C.muted }}>Cancel</button>
+          )}
+          <button className="cc-btn" onClick={saveDraft} style={{ padding: "9px 16px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, fontSize: 13.5, fontWeight: 600, cursor: "pointer", color: C.ink }}>{editingPost ? "Update draft" : "Save draft"}</button>
           <button className="cc-btn" disabled={!canPublish} style={{
             padding: "9px 18px", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600,
             cursor: canPublish ? "pointer" : "not-allowed",
