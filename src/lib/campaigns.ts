@@ -35,36 +35,47 @@ export const MONTH: MonthStat[] = [
   { label: "Total reach",     value: "21.4K" },
 ];
 
-export type PubStatus = "published" | "pending" | "failed";
+// Post-level status (Campaign::Post enum)
+export type PostStatus = "draft" | "published";
+// Per-account publication status (Campaign::Publication)
+export type PublicationStatus = "ready" | "wip" | "published" | "failed" | "skipped";
 export type PostKind = "post" | "ad" | "draft";
 
+export type PostMedia = { id: number; filename: string; url: string };
+
 export type Post = {
+  id?: number;             // from the API
   kind: PostKind;
-  body: string;
-  time: string;
-  media: number;
-  pubs: { platform: PlatformKey; status: PubStatus }[];
+  content?: string;        // from the API
+  body?: string;           // legacy mock field
+  url?: string;            // optional link (from the API)
+  time?: string;
+  media: PostMedia[];
+  publications: { id: number; status: PublicationStatus; platform: PlatformKey }[];
   draft?: boolean;
+  status?: PostStatus;
 };
 
 export const POSTS: Post[] = [
-  { kind: "post", time: "2h ago", media: 1, body: "New 6am strength class drops Monday 💪 First session is free for members. Link in bio. reptrack.io/strength",
-    pubs: [{ platform: "mastodon", status: "published" }, { platform: "x", status: "published" }] },
-  { kind: "ad", time: "5h ago", media: 2, body: "Summer Shred challenge — 8 weeks, real coaching, measurable results. Join 200+ members already signed up. reptrack.io/shred",
-    pubs: [{ platform: "x", status: "published" }, { platform: "instagram", status: "failed" }] },
-  { kind: "post", time: "just now", media: 1, body: "Throwback to last weekend's deadlift PR board. Who's breaking a record this week?",
-    pubs: [{ platform: "mastodon", status: "pending" }, { platform: "instagram", status: "pending" }] },
-  { kind: "draft", time: "1d ago", media: 0, draft: true, body: "Draft: member spotlight on Marco — down 30lbs in 4 months. Need to grab his before/after photos.", pubs: [] },
+  { kind: "post", time: "2h ago", media: [], body: "New 6am strength class drops Monday 💪 First session is free for members. Link in bio. reptrack.io/strength",
+    publications: [{ id: 1, status: "published", platform: "mastodon" }, { id: 2, status: "published", platform: "x" }] },
+  { kind: "ad", time: "5h ago", media: [], body: "Summer Shred challenge — 8 weeks, real coaching, measurable results. Join 200+ members already signed up. reptrack.io/shred",
+    publications: [{ id: 3, status: "published", platform: "x" }, { id: 4, status: "failed", platform: "instagram" }] },
+  { kind: "post", time: "just now", media: [], body: "Throwback to last weekend's deadlift PR board. Who's breaking a record this week?",
+    publications: [{ id: 5, status: "wip", platform: "mastodon" }, { id: 6, status: "ready", platform: "instagram" }] },
+  { kind: "draft", time: "1d ago", media: [], draft: true, body: "Draft: member spotlight on Marco — down 30lbs in 4 months. Need to grab his before/after photos.", publications: [] },
 ];
 
 /* ------------------------------------------------------------------ */
 /* publication status styling                                          */
 /* ------------------------------------------------------------------ */
 
-export const STATUS: Record<PubStatus, { c: string; bg: string }> = {
-  published: { c: C.ok,   bg: "#ECFDF5" },
-  pending:   { c: C.warn, bg: "#FBF6E7" },
-  failed:    { c: C.err,  bg: "#FCEEEC" },
+export const STATUS: Record<PublicationStatus, { c: string; bg: string; label: string }> = {
+  ready:     { c: C.warn,   bg: "#FBF6E7", label: "Pending" },
+  wip:       { c: C.warn,   bg: "#FBF6E7", label: "Publishing" },
+  published: { c: C.ok,     bg: "#ECFDF5", label: "Published" },
+  failed:    { c: C.err,    bg: "#FCEEEC", label: "Failed" },
+  skipped:   { c: C.muted2, bg: "#F1F0EC", label: "Skipped" },
 };
 
 /* shared card surface used by the composer + posts cards */

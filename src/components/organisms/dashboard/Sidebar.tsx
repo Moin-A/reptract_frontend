@@ -286,7 +286,6 @@ function AccountCategoriesSection() {
                   </svg>
                 )}
               </div>
-              <span style={{ width: 8, height: 8, borderRadius: 8, background: c.color, flexShrink: 0 }} />
               <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.label}</span>
             </div>
             <span style={{ fontSize: 12, color: C.muted2, background: "white", border: `1px solid ${C.line}`, borderRadius: 100, padding: "1px 8px", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{count}</span>

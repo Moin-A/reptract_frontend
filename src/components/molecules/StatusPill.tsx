@@ -1,9 +1,9 @@
 import type { PlatformKey } from "@/lib/types";
-import { PLATFORMS, STATUS, type PubStatus } from "@/lib/campaigns";
+import { PLATFORMS, STATUS, type PublicationStatus } from "@/lib/campaigns";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { PlatformBadge } from "@/components/atoms/PlatformBadge";
 
-type Props = { platform: PlatformKey; status: PubStatus };
+type Props = { platform: PlatformKey; status: PublicationStatus };
 
 /** Per-platform publication status chip: icon + name + status dot. */
 export function StatusPill({ platform, status }: Props) {
@@ -16,7 +16,7 @@ export function StatusPill({ platform, status }: Props) {
       <PlatformBadge platform={platform} size={18} />
       {PLATFORMS[platform].label}
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: s.c, fontWeight: 500 }}>
-        <span style={{ width: 6, height: 6, borderRadius: 999, background: s.c }} />{status}
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: s.c }} />{s.label}
       </span>
     </span>
   );
