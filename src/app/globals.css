@@ -275,3 +275,35 @@
     text-transform: uppercase;
   }
 }
+
+/* ── Campaign composer interactions ─────────────────────────────
+   Shared by the campaign composer/posts (main) and the campaign
+   rail (sidebar) so neither has to inject its own <style>.        */
+.cc-compose-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .cc-compose-grid { grid-template-columns: 1fr; }
+}
+
+.cc-row     { transition: background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.cc-row:hover { background: #FBFAF8; }
+
+.cc-btn     { transition: filter .15s ease, background .15s ease, color .15s ease; }
+.cc-btn:hover:not(:disabled) { filter: brightness(.97); }
+
+.cc-link:hover { color: #FF5B1F; }
+
+.cc-field   { transition: border-color .15s ease, box-shadow .15s ease; }
+.cc-field:focus { outline: none; border-color: #FF5B1F; box-shadow: 0 0 0 3px rgba(255, 91, 31, .12); }
+
+.cc-dropzone { transition: border-color .15s ease, background .15s ease; }
+.cc-dropzone:hover { border-color: #FF5B1F; background: #FCF4F1; }
+
+.cc-target:hover { background: #fff; }
+
+.cc-connect { transition: border-color .15s ease, color .15s ease; }
+.cc-connect:hover { border-color: #FF5B1F; color: #FF5B1F; }
