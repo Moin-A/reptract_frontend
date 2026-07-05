@@ -45,7 +45,11 @@ export function DashboardTasks() {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  function toggleTask(id: number) {
+  async function toggleTask(id: number) {
+    const task = Object.values(tasks).flat().find(t => t.id === id);
+    const markingComplete = task ? !task.done : true;
+
+    // Optimistic flip.
     setTasks(prev =>
       Object.fromEntries(
         Object.entries(prev).map(([bucket, list]) => [
@@ -54,6 +58,12 @@ export function DashboardTasks() {
         ])
       )
     );
+
+    // Only completing has a backend endpoint (un-complete stays local for now).
+    if (!markingComplete) return;
+
+    const res = await fetch(`/api/tasks/${id}/complete`, { method: "POST", credentials: "include" });
+    if (!res.ok) fetchTasks(pages); // resync — revert the optimistic flip
   }
 
   async function deleteTask(id: number) {
