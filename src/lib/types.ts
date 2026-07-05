@@ -17,7 +17,7 @@ export interface Group {
   name: string;
 }
 
-export type PlatformKey = "mastodon" | "x" | "instagram";
+export type PlatformKey = "mastodon" | "x" | "instagram" | "facebook";
 
 // ── Task ──────────────────────────────────────────────────────────
 export type TaskUser = {
