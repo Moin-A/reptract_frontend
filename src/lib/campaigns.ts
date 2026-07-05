@@ -12,6 +12,7 @@ export const PLATFORMS: Record<PlatformKey, PlatformMeta> = {
   mastodon:  { label: "Mastodon",  limit: 500,  mark: "m",  badge: "#6364FF" },
   x:         { label: "X",         limit: 280,  mark: "𝕏",  badge: "#0B0B0C" },
   instagram: { label: "Instagram", limit: 2200, mark: "◙",  badge: "linear-gradient(45deg,#FEDA75,#D62976,#962FBF)" },
+  facebook:  { label: "Facebook",  limit: 63206, mark: "f", badge: "#1877F2" },
 };
 
 /* ------------------------------------------------------------------ */
