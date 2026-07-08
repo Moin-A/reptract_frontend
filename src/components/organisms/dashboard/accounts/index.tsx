@@ -39,6 +39,7 @@ export function AccountsView() {
   useEffect(() => {
     const params = new URLSearchParams();
     params.set("search", debouncedValue);
+    params.set("sort", sort);
 
     fetch("/api/accounts?" + params.toString(), { credentials: "include" })
       .then(res => res.json())
@@ -53,7 +54,7 @@ export function AccountsView() {
         setAcctCountByCategory(counts);
       })
       .finally(() => setLoading(false));
-  }, [setAcctCountByCategory, debouncedValue]);
+  }, [setAcctCountByCategory, debouncedValue, sort]);
 
   // "New Record" button in PageHeader triggers this
   useEffect(() => {

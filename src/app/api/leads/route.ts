@@ -1,11 +1,12 @@
 import { ReptrackApi } from "../../../../service/api";
 import { cookies } from "next/headers";
 
-export async function GET() {
+export async function GET(req: Request) {
   const cookieStore = await cookies();
   const api = new ReptrackApi();
+  const { search } = new URL(req.url); // "?search=…&sort=…" passthrough
 
-  const response = await api.request("/leads", {
+  const response = await api.request(`/leads${search}`, {
     headers: { Cookie: cookieStore.toString() },
   });
 
