@@ -11,6 +11,7 @@ import { AccountGridView } from "./AccountGridView";
 import { ConfirmDialog } from "@/components/molecules/ConfirmDialog";
 import { FormErrorBanner } from "@/components/ui/error_banner";
 import { FormSuccessBanner } from "@/components/ui/success_banner";
+import { useDebouncedState } from "@/hooks/useDebouncing";
 
 export function AccountsView() {
   const {
@@ -23,7 +24,7 @@ export function AccountsView() {
 
   const [accounts,        setAccounts]        = useState<Account[]>([]);
   const [loading,         setLoading]         = useState(true);
-  const [search,          setSearch]          = useState("");
+  const [search, debouncedValue, setSearch] = useDebouncedState<string>("", 400);
   const [searchTab,       setSearchTab]       = useState<"basic" | "advanced">("basic");
   const [view,            setView]            = useState<"list" | "grid">("list");
   const [editingAccount,  setEditingAccount]  = useState<Account | null>(null);
@@ -36,7 +37,11 @@ export function AccountsView() {
   const [success, setSuccess] = useState<{ title: string; body: string } | null>(null);
 
   useEffect(() => {
-    fetch("/api/accounts", { credentials: "include" })
+    const params = new URLSearchParams();
+    params.set("search", debouncedValue);
+    params.set("sort", sort);
+
+    fetch("/api/accounts?" + params.toString(), { credentials: "include" })
       .then(res => res.json())
       .then((data: { accounts: Account[] }) => {
         const accts = data.accounts ?? [];
@@ -49,7 +54,7 @@ export function AccountsView() {
         setAcctCountByCategory(counts);
       })
       .finally(() => setLoading(false));
-  }, [setAcctCountByCategory]);
+  }, [setAcctCountByCategory, debouncedValue, sort]);
 
   // "New Record" button in PageHeader triggers this
   useEffect(() => {

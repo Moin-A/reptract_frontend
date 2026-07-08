@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { useDashboard } from "@/components/organisms/dashboard/DashboardContext";
+import { useDebouncedState } from "@/hooks/useDebouncing";
 import { type Lead } from "@/lib/types";
 import { ALL_LEAD_STATUS_KEYS, LEAD_STATUS_MAP } from "./statuses";
 import { CreateLeadCard } from "./CreateLeadCard";
@@ -14,46 +15,38 @@ export function LeadsView() {
   const { leadStatusFilter, leadCreateSignal } = useDashboard();
   const [leads,       setLeads]       = useState<Lead[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [search,      setSearch]      = useState("");
+  const [search, debouncedSearch, setSearch] = useDebouncedState<string>("", 400);
   const [searchTab,   setSearchTab]   = useState<"basic" | "advanced">("basic");
   const [sort,        setSort]        = useState<SortKey>("newest");
   const [advStatus,   setAdvStatus]   = useState("");
   const [advSource,   setAdvSource]   = useState("");
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
+  // Search + sort are handled server-side (ransack); status filters stay local.
   useEffect(() => {
-    fetch("/api/leads", { credentials: "include" })
+    const params = new URLSearchParams();
+    params.set("search", debouncedSearch);
+    params.set("sort", sort);
+
+    fetch("/api/leads?" + params.toString(), { credentials: "include" })
       .then(res => res.json())
-      .then((data: { leads: Lead[] }) => {
-        console.log("Leads from API:", data);
-        setLeads(data.leads ?? []);
-      })
+      .then((data: { leads: Lead[] }) => setLeads(data.leads ?? []))
       .catch(() => setLeads([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [debouncedSearch, sort]);
 
   // open create form via PageHeader "New Record" button
   useEffect(() => {
     if (leadCreateSignal > 0) setEditingLead(null);
   }, [leadCreateSignal]);
 
-  const filtered = leads
-    .filter(l => {
-      const inStatus = leadStatusFilter.includes(l.status);
-      const q        = search.toLowerCase();
-      const fullName = `${l.first_name ?? ""} ${l.last_name ?? ""}`.trim() || l.name;
-      const matchQ   = !q || fullName.toLowerCase().includes(q) || (l.company ?? "").toLowerCase().includes(q);
-      const matchSt  = !advStatus || l.status === advStatus;
-      const matchSrc = !advSource || l.source === advSource;
-      return inStatus && matchQ && matchSt && matchSrc;
-    })
-    .sort((a, b) => {
-      const nameA = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || a.name;
-      const nameB = `${b.first_name ?? ""} ${b.last_name ?? ""}`.trim() || b.name;
-      if (sort === "name")   return nameA.localeCompare(nameB);
-      if (sort === "oldest") return (b.daysAgo ?? 0) - (a.daysAgo ?? 0);
-      return (a.daysAgo ?? 0) - (b.daysAgo ?? 0);
-    });
+  // Text search + ordering come from the server; only status filters here.
+  const filtered = leads.filter(l => {
+    const inStatus = leadStatusFilter.includes(l.status);
+    const matchSt  = !advStatus || l.status === advStatus;
+    const matchSrc = !advSource || l.source === advSource;
+    return inStatus && matchSt && matchSrc;
+  });
 
   async function handleDelete(id: number) {
     const prev = leads;
