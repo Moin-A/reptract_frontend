@@ -87,6 +87,7 @@ export type Lead = {
   do_not_call?: boolean;
   rating:       number;
   tags?:        string[];
+  access?:      string;          // "Public" | "Private" | "Shared"
   assigned_to?: string | null;   // display name
   assignee_id?: number | null;   // numeric FK sent to backend
   campaign?:    string;
