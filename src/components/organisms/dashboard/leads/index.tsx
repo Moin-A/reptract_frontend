@@ -6,6 +6,7 @@ import { useDebouncedState } from "@/hooks/useDebouncing";
 import { type Lead } from "@/lib/types";
 import { ALL_LEAD_STATUS_KEYS, LEAD_STATUS_MAP } from "./statuses";
 import { CreateLeadCard } from "./CreateLeadCard";
+import { ConvertLeadCard } from "./ConvertLeadCard";
 import { LeadListView } from "./LeadListView";
 import { LeadSearchBar } from "./LeadSearchBar";
 
@@ -21,6 +22,7 @@ export function LeadsView() {
   const [advStatus,   setAdvStatus]   = useState("");
   const [advSource,   setAdvSource]   = useState("");
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [convertingLead, setConvertingLead] = useState<Lead | null>(null);
 
   // Search + sort are handled server-side (ransack); status filters stay local.
   useEffect(() => {
@@ -90,6 +92,15 @@ export function LeadsView() {
         onEditCancel={() => setEditingLead(null)}
       />
 
+      <ConvertLeadCard
+        lead={convertingLead}
+        onCancel={() => setConvertingLead(null)}
+        onConverted={id => {
+          setLeads(prev => prev.map(l => l.id === id ? { ...l, status: "converted" } : l));
+          setConvertingLead(null);
+        }}
+      />
+
       {/* Search + List card */}
       <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
         <LeadSearchBar
@@ -104,7 +115,7 @@ export function LeadsView() {
           leads={filtered}
           onEdit={id => setEditingLead(leads.find(l => l.id === id) ?? null)}
           onDelete={handleDelete}
-          onConvert={id => setLeads(prev => prev.map(l => l.id === id ? { ...l, status: "converted" } : l))}
+          onConvert={id => setConvertingLead(leads.find(l => l.id === id) ?? null)}
         />
       </div>
     </>
