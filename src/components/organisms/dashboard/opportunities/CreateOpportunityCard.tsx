@@ -225,7 +225,8 @@ export function CreateOpportunityCard({ view, onViewChange, onOppCreated }: Prop
       )}
 
       <FormFooter
-        label={submitting ? "Opportunity…" : "Opportunity"}
+        label="Opportunity"
+        submitLabel={submitting ? "Creating…" : undefined}
         onSubmit={submit}
         onCancel={() => { setFormOpen(false); reset(); }}
         success={fSuccess}
