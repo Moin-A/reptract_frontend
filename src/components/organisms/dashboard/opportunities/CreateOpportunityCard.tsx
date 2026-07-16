@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { C } from "@/components/organisms/dashboard/tokens";
 import { STAGES, STAGE_MAP, type StageKey } from "./stages";
-import { type Opp } from "@/lib/types";
+import { mapOpp, type ApiOpportunity } from "./mapOpp";
+import { type Account, type Opp } from "@/lib/types";
 import { CollapsibleSection } from "@/components/molecules/CollapsibleSection";
 import { CreateCardShell } from "@/components/molecules/CreateCardShell";
 import { FormFooter } from "@/components/molecules/FormFooter";
@@ -30,29 +31,67 @@ export function CreateOpportunityCard({ view, onViewChange, onOppCreated }: Prop
   const [fProb,      setFProb]      = useState(10);
   const [fAmt,       setFAmt]       = useState("");
   const [fDiscount,  setFDiscount]  = useState("");
-  const [fAccount,   setFAccount]   = useState("");
-  const [fAssigned,  setFAssigned]  = useState("");
+  const [fAccount,   setFAccount]   = useState("");   // account id (string)
+  const [fAssigned,  setFAssigned]  = useState("");   // assignee id (string)
   const [fCampaign,  setFCampaign]  = useState("");
   const [fTags,      setFTags]      = useState<string[]>([]);
   const [fNameError, setFNameError] = useState(false);
   const [fSuccess,   setFSuccess]   = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
+  const [accounts,   setAccounts]   = useState<Account[]>([]);
+
+  useEffect(() => {
+    fetch("/api/accounts", { credentials: "include" })
+      .then(res => res.json())
+      .then((data: { accounts?: Account[] }) => setAccounts(data.accounts ?? []))
+      .catch(() => setAccounts([]));
+  }, []);
 
   function reset() {
     setFName(""); setFStage("prospecting"); setFClose(""); setFProb(10);
     setFAmt(""); setFDiscount(""); setFAccount(""); setFAssigned("");
-    setFCampaign(""); setFTags([]); setFNameError(false); setFSuccess(false);
+    setFCampaign(""); setFTags([]); setFNameError(false); setFSuccess(false); setError(null);
   }
 
-  function submit() {
+  async function submit() {
     if (!fName.trim()) { setFNameError(true); return; }
     setFNameError(false);
-    onOppCreated({
-      id: Date.now(), name: fName.trim(), stage: fStage,
-      acct: fAccount || "New account", amt: parseInt(fAmt) || 0,
-      prob: fProb, user: fAssigned || "Unassigned", daysAgo: 0,
-    });
-    setFSuccess(true);
-    setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); }, 1200);
+    setSubmitting(true);
+    setError(null);
+
+    const body = {
+      opportunity: {
+        name:        fName.trim(),
+        stage:       fStage,
+        closes_on:   fClose || null,
+        probability: fProb,
+        amount:      fAmt ? Number(fAmt) : null,
+        discount:    fDiscount ? Number(fDiscount) : null,
+        account_id:  fAccount ? Number(fAccount) : null,
+        assignee_id: fAssigned ? Number(fAssigned) : null,
+      },
+    };
+
+    try {
+      const res  = await fetch("/api/opportunities", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.errors?.join(", ") ?? `The server responded with ${res.status}.`);
+        return;
+      }
+      onOppCreated(mapOpp(data.opportunity as ApiOpportunity));
+      setFSuccess(true);
+      setTimeout(() => { setFSuccess(false); setFormOpen(false); reset(); }, 1200);
+    } catch {
+      setError("Could not reach the server. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const headerRight = (
@@ -131,16 +170,17 @@ export function CreateOpportunityCard({ view, onViewChange, onOppCreated }: Prop
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           <div>
             <label style={fieldLabel}>Account</label>
-            <input value={fAccount} onChange={e => setFAccount(e.target.value)}
-              onFocus={focusInput} onBlur={blurInput}
-              style={baseInput} placeholder="Type to create new, or pick existing" />
-            <div style={{ fontSize: 11.5, color: C.muted2, marginTop: 4 }}>
-              Create new or <a href="#" onClick={e => e.preventDefault()} style={{ color: C.accent }}>select existing</a>
-            </div>
+            <SelectWrap>
+              <select value={fAccount} onChange={e => setFAccount(e.target.value)}
+                onFocus={focusInput} onBlur={blurInput} style={baseSelect}>
+                <option value="">No account</option>
+                {accounts.map(a => <option key={a.id} value={String(a.id)}>{a.name}</option>)}
+              </select>
+            </SelectWrap>
           </div>
           <div>
-            <label style={fieldLabel}>Assigned to <span style={{ color: C.err }}>*</span></label>
-            <AssigneeSelect value={fAssigned} onChange={setFAssigned} />
+            <label style={fieldLabel}>Assigned to</label>
+            <AssigneeSelect value={fAssigned} onChange={setFAssigned} useId />
           </div>
         </div>
 
@@ -178,8 +218,14 @@ export function CreateOpportunityCard({ view, onViewChange, onOppCreated }: Prop
         </p>
       </CollapsibleSection>
 
+      {error && (
+        <div style={{ padding: "10px 24px", fontSize: 13, color: C.err, background: "#FEF2F2", borderTop: `1px solid ${C.line}` }}>
+          {error}
+        </div>
+      )}
+
       <FormFooter
-        label="Opportunity"
+        label={submitting ? "Opportunity…" : "Opportunity"}
         onSubmit={submit}
         onCancel={() => { setFormOpen(false); reset(); }}
         success={fSuccess}
