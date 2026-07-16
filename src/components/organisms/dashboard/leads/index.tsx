@@ -37,7 +37,8 @@ export function LeadsView() {
       .finally(() => setLoading(false));
   }, [debouncedSearch, sort]);
 
-  // open create form via PageHeader "New Record" button
+  // The PageHeader "New Record" button bumps leadCreateSignal. Clear any edit in
+  // progress here; CreateLeadCard watches the same signal to open a blank form.
   useEffect(() => {
     if (leadCreateSignal > 0) setEditingLead(null);
   }, [leadCreateSignal]);
@@ -90,6 +91,7 @@ export function LeadsView() {
         onLeadUpdated={lead => setLeads(prev => prev.map(l => l.id === lead.id ? lead : l))}
         editLead={editingLead}
         onEditCancel={() => setEditingLead(null)}
+        externalOpenSignal={leadCreateSignal}
       />
 
       <ConvertLeadCard

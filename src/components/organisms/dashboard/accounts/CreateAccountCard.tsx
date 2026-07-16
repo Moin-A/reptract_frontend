@@ -339,7 +339,9 @@ export function CreateAccountCard({ view, onViewChange, onAccountCreated, onAcco
       </div>
 
       <FormFooter
-        label={editAccount ? "Save Changes" : "Account"}
+        label="Account"
+        submitLabel={editAccount ? "Save Changes" : undefined}
+        successLabel={editAccount ? "Changes saved!" : undefined}
         onSubmit={submit}
         onCancel={() => { setFormOpen(false); reset(); onEditCancel?.(); }}
         success={fSuccess}

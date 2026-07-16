@@ -24,6 +24,7 @@ type Props = {
   onLeadUpdated?: (lead: Lead) => void;
   editLead?:      Lead | null;
   onEditCancel?:  () => void;
+  externalOpenSignal?: number;
 };
 
 type PermValue = "private" | "everyone";
@@ -39,7 +40,7 @@ const SectionTitle = ({ icon, children }: { icon: React.ReactNode; children: Rea
   </div>
 );
 
-export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditCancel }: Props) {
+export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditCancel, externalOpenSignal }: Props) {
   const [formOpen,    setFormOpen]    = useState(false);
   // Basic
   const [fFirst,      setFFirst]      = useState("");
@@ -79,6 +80,11 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
   const [fLastErr,    setFLastErr]    = useState(false);
   const [fSuccess,    setFSuccess]    = useState(false);
   const [serverError, setServerError] = useState<FormError | null>(null);
+  // Address is required by the backend (Address validates street1/city/state/
+  // zipcode/country). street2 is the only optional part.
+  const [addrErrs,    setAddrErrs]    = useState<Record<string, boolean>>({});
+  const [fEmailErr,   setFEmailErr]   = useState(false);
+  const [fPhoneErr,   setFPhoneErr]   = useState(false);
 
   const isOpen = formOpen || !!editLead;
 
@@ -122,12 +128,43 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
     setFWebsite(""); setFLinkedin(""); setFFacebook("");
     setFPerm("private");
     setFFirstErr(false); setFLastErr(false); setFSuccess(false); setServerError(null);
+    setAddrErrs({}); setFEmailErr(false); setFPhoneErr(false);
   }
+
+  // "New Record" in the page header bumps this counter; open a blank form.
+  // Resetting state here is the point of the effect — it mirrors CreateAccountCard.
+  useEffect(() => {
+    if (!externalOpenSignal) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    reset();
+    setFormOpen(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [externalOpenSignal]);
 
   async function submit() {
     let valid = true;
     if (!fFirst.trim()) { setFFirstErr(true); valid = false; }
     if (!fLast.trim())  { setFLastErr(true);  valid = false; }
+
+    // Mirror the backend's Address presence validation so the user sees the
+    // problem here rather than as a server error after submitting.
+    const missing: Record<string, boolean> = {
+      street1: !fStreet1.trim(),
+      city:    !fCity.trim(),
+      state:   !fAddrState.trim(),
+      zipcode: !fZip.trim(),
+      country: !fCountry.trim(),
+    };
+    setAddrErrs(missing);
+    if (Object.values(missing).some(Boolean)) valid = false;
+
+    // Format checks (the backend validates email format too).
+    const emailBad = !!fEmail.trim() && !/\S+@\S+\.\S+/.test(fEmail.trim());
+    const phoneBad = !!fPhone.trim() && !/^[\d\s()+.-]{7,}$/.test(fPhone.trim());
+    setFEmailErr(emailBad);
+    setFPhoneErr(phoneBad);
+    if (emailBad || phoneBad) valid = false;
+
     if (!valid) return;
     setFFirstErr(false); setFLastErr(false);
     setServerError(null);
@@ -228,12 +265,16 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
         {/* Row 2: Email / Phone */}
         <FormRow columns="1fr 1fr">
           <FormField label="Email">
-            <FormInput value={fEmail} onChange={e => setFEmail(e.target.value)}
-              type="email" placeholder="syble@borer-lindgren.com" />
+            <FormInput value={fEmail} onChange={e => { setFEmail(e.target.value); setFEmailErr(false); }}
+              type="email" placeholder="syble@borer-lindgren.com"
+              style={fEmailErr ? { borderColor: C.err } : undefined} />
+            {fEmailErr && <div style={{ fontSize: 12, color: C.err, marginTop: 5 }}>Enter a valid email address.</div>}
           </FormField>
           <FormField label="Phone">
-            <FormInput value={fPhone} onChange={e => setFPhone(e.target.value)}
-              type="tel" placeholder="(555) 123-4567" />
+            <FormInput value={fPhone} onChange={e => { setFPhone(e.target.value); setFPhoneErr(false); }}
+              type="tel" placeholder="(555) 123-4567"
+              style={fPhoneErr ? { borderColor: C.err } : undefined} />
+            {fPhoneErr && <div style={{ fontSize: 12, color: C.err, marginTop: 5 }}>Enter a valid phone number.</div>}
           </FormField>
         </FormRow>
 
@@ -303,26 +344,36 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 0 }}>
           {/* Address */}
           <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Address</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Address <span style={{ color: C.err }}>*</span>
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <FormInput value={fStreet1} onChange={e => setFStreet1(e.target.value)} placeholder="Street 1" />
+              <FormInput value={fStreet1} onChange={e => { setFStreet1(e.target.value); setAddrErrs(p => ({ ...p, street1: false })); }}
+                placeholder="Street 1 *" style={addrErrs.street1 ? { borderColor: C.err } : undefined} />
               <FormInput value={fStreet2} onChange={e => setFStreet2(e.target.value)} placeholder="Street 2" />
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
-                <FormInput value={fCity}       onChange={e => setFCity(e.target.value)}       placeholder="City"  />
-                <FormInput value={fAddrState}  onChange={e => setFAddrState(e.target.value)}  placeholder="State" />
+                <FormInput value={fCity} onChange={e => { setFCity(e.target.value); setAddrErrs(p => ({ ...p, city: false })); }}
+                  placeholder="City *" style={addrErrs.city ? { borderColor: C.err } : undefined} />
+                <FormInput value={fAddrState} onChange={e => { setFAddrState(e.target.value); setAddrErrs(p => ({ ...p, state: false })); }}
+                  placeholder="State *" style={addrErrs.state ? { borderColor: C.err } : undefined} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8 }}>
-                <FormInput value={fZip} onChange={e => setFZip(e.target.value)} placeholder="ZIP" />
+                <FormInput value={fZip} onChange={e => { setFZip(e.target.value); setAddrErrs(p => ({ ...p, zipcode: false })); }}
+                  placeholder="ZIP *" style={addrErrs.zipcode ? { borderColor: C.err } : undefined} />
                 <SelectWrap>
-                  <select value={fCountry} onChange={e => setFCountry(e.target.value)}
-                    onFocus={focusInput} onBlur={blurInput} style={baseSelect}>
-                    <option value="">Select a country</option>
+                  <select value={fCountry} onChange={e => { setFCountry(e.target.value); setAddrErrs(p => ({ ...p, country: false })); }}
+                    onFocus={focusInput} onBlur={blurInput}
+                    style={{ ...baseSelect, ...(addrErrs.country ? { borderColor: C.err } : {}) }}>
+                    <option value="">Select a country *</option>
                     {["United States","Canada","United Kingdom","Australia","India","Other"].map(c => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>
                 </SelectWrap>
               </div>
+              {Object.values(addrErrs).some(Boolean) && (
+                <div style={{ fontSize: 12, color: C.err }}>All address fields except Street 2 are required.</div>
+              )}
             </div>
           </div>
 
@@ -414,7 +465,9 @@ export function CreateLeadCard({ onLeadCreated, onLeadUpdated, editLead, onEditC
       </div>
 
       <FormFooter
-        label={editLead ? "Save Changes" : "Lead"}
+        label="Lead"
+        submitLabel={editLead ? "Save Changes" : undefined}
+        successLabel={editLead ? "Changes saved!" : undefined}
         onSubmit={submit}
         onCancel={() => { setFormOpen(false); reset(); onEditCancel?.(); }}
         success={fSuccess}
