@@ -70,9 +70,18 @@ export async function fetchGroups(): Promise<{ groups: { id: number; name: strin
   }
 }
 
+export type ServerUser = {
+  id: number;
+  name: string;
+  email: string;
+  onboarded: boolean;
+  workspace: { id: number; name: string } | null;
+};
+
 // Server-only: fetch the current user by forwarding session cookies.
-// Call this from Server Components (e.g. layout.tsx).
-export async function getServerUser(): Promise<{ id: number; name: string; email: string } | null> {
+// Call this from Server Components / proxy. The API wraps the user as
+// `{ user: {...} }`, so we unwrap it here.
+export async function getServerUser(): Promise<ServerUser | null> {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
   const api = new ReptrackApi();
@@ -81,7 +90,8 @@ export async function getServerUser(): Promise<{ id: number; name: string; email
       headers: { Cookie: cookieStore.toString() },
     });
     if (!res.ok) return null;
-    return res.json();
+    const body = await res.json();
+    return body?.user ?? null;
   } catch {
     return null;
   }

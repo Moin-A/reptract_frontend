@@ -5,6 +5,11 @@ import { getServerUser } from "../service/api";
 
 const PUBLIC_PATHS = ["/"];
 
+// Billing/checkout lives on the Rails backend (a different origin), so this is
+// an absolute URL we redirect the browser to when a user has no workspace yet.
+const BILLING_CHECKOUT_URL =
+  process.env.NEXT_PUBLIC_BILLING_CHECKOUT_URL ?? "http://localhost:3000/billing/checkout";
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -16,6 +21,10 @@ export async function proxy(request: NextRequest) {
       const initialUser = await getServerUser();
       if (!initialUser) {
         return NextResponse.redirect(new URL("/", request.url));
+      }
+      // Signed in but no workspace yet → must create one via billing first.
+      if (!initialUser.workspace) {
+        return NextResponse.redirect(new URL(BILLING_CHECKOUT_URL));
       }
   } catch {
     return NextResponse.redirect(new URL("/", request.url));

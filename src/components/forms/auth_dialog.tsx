@@ -4,7 +4,13 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { FormErrorBanner, type FormError } from "@/components/ui/error_banner";
 import { m } from "framer-motion";
 import { Dumbbell } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+// Billing/checkout lives on the Rails backend (a different origin from this
+// Next app), so redirecting there needs a full navigation, not router.push.
+const BILLING_CHECKOUT_URL =
+  process.env.NEXT_PUBLIC_BILLING_CHECKOUT_URL ?? "http://localhost:3000/billing/checkout";
 
 const T = {
   ink:      '#0B0B0C',
@@ -43,6 +49,7 @@ function scorePassword(pw: string): number {
 }
 
 function useAuthForm() {
+  const router = useRouter();
   const [mode, setModeRaw] = useState<'signin' | 'signup'>('signin');
   const [values, setValues] = useState({ name: '', email: '', password: '', confirm: '' });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -100,8 +107,19 @@ function useAuthForm() {
         setSubmitting(false);
         return;
       }
+      const data = await res.json().catch(() => ({}));
       setSubmitting(false);
       setSucceeded(true);
+      // Users without a workspace (just signed up, haven't paid) go to billing
+      // to create one; everyone else lands on the dashboard.
+      const hasWorkspace = Boolean(data?.user?.workspace);
+      setTimeout(() => {
+        if (hasWorkspace) {
+          router.push("/dashboard");
+        } else {
+          window.location.href = BILLING_CHECKOUT_URL;
+        }
+      }, 1500);
     } catch {
       setServerError({ title: "We couldn't sign you in", body: 'Network error. Please check your connection.' });
       setSubmitting(false);
