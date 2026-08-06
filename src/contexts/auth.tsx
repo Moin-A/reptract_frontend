@@ -6,6 +6,8 @@ type User = {
   id: number;
   name: string;
   email: string;
+  onboarded?: boolean;
+  workspace?: { id: number; name: string } | null;
 };
 
 const AuthContext = createContext<User | null>(null);
