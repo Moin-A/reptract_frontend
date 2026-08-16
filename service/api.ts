@@ -86,7 +86,7 @@ export async function getServerUser(): Promise<ServerUser | null> {
   const cookieStore = await cookies();
   const api = new ReptrackApi();
   try {
-    const res = await api.request("users/sessions/me", {
+    const res = await api.request("/users/sessions/me", {
       headers: { Cookie: cookieStore.toString() },
     });
     if (!res.ok) return null;
