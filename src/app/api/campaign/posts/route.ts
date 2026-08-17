@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   // preserves the client's boundary and every field (file + campaign_post[...])
   // without reparsing or rebuilding the body. `duplex: "half"` is required when
   // passing a stream as the request body.
-  const response = await fetch(`${api.baseUrl}/campaign/posts`, {
+  const response = await fetch(`${await api.resolvedBaseUrl()}/campaign/posts`, {
     method: "POST",
     body: req.body,
     duplex: "half",

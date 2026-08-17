@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServerUser } from "../service/api";
+import { Session } from "inspector/promises";
 
 
 const PUBLIC_PATHS = ["/"];
@@ -11,6 +12,7 @@ const BILLING_CHECKOUT_URL =
   process.env.NEXT_PUBLIC_BILLING_CHECKOUT_URL ?? "http://localhost:3000/billing/checkout";
 
 export async function proxy(request: NextRequest) {
+  
   const { pathname } = request.nextUrl;
 
   if (PUBLIC_PATHS.includes(pathname) || pathname.startsWith("/api/")) {
@@ -22,8 +24,9 @@ export async function proxy(request: NextRequest) {
       if (!initialUser) {
         return NextResponse.redirect(new URL("/", request.url));
       }
-      // Signed in but no workspace yet → must create one via billing first.
+
       if (!initialUser.workspace) {
+        const workspace = request.cookies.get("workspace")?.value;
         return NextResponse.redirect(new URL(BILLING_CHECKOUT_URL));
       }
   } catch {
