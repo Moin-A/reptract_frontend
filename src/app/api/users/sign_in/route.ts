@@ -11,36 +11,37 @@ export async function POST(req: Request) {
   });
 
   const body = await upstream.text();
+  console.log("[sign_in] upstream.status:", upstream.status, "ok:", upstream.ok);
+  console.log("[sign_in] upstream set-cookie count:", upstream.headers.getSetCookie().length);
+
   const res = new NextResponse(body, {
     status: upstream.status,
     headers: { "content-type": upstream.headers.get("content-type") ?? "application/json" },
   });
 
-  // Forward Rails' session Set-Cookie(s) to the browser. getSetCookie() returns
-  // each Set-Cookie separately (a plain .get folds them into one, corrupting
-  // values whose Expires date contains a comma).
+  // Forward Rails' session Set-Cookie(s) to the browser.
   for (const cookie of upstream.headers.getSetCookie()) {
     res.headers.append("set-cookie", cookie);
   }
 
-  // Store the tenant subdomain (workspace.subdomain, e.g. "ironworks") so
-  // ReptrackApi routes later requests to <subdomain>.<api-host>; Apartment maps
-  // that subdomain to the workspace's schema. Only when the user has a workspace.
   if (upstream.ok) {
     try {
       const ws = JSON.parse(body)?.user?.workspace;
       const subdomain = ws?.subdomain ?? ws?.name;
+      console.log("[sign_in] workspace:", JSON.stringify(ws), "-> subdomain:", subdomain);
       if (subdomain) {
-        // Append as a raw Set-Cookie, same path as the session cookies above —
-        // mixing res.cookies.set() with res.headers.append() drops one of them.
         const attrs = [`subdomain=${encodeURIComponent(subdomain)}`, "Path=/", "HttpOnly", "SameSite=Lax"];
         if (process.env.NODE_ENV === "production") attrs.push("Secure");
         res.headers.append("set-cookie", attrs.join("; "));
+        console.log("[sign_in] appended subdomain cookie:", attrs.join("; "));
+      } else {
+        console.log("[sign_in] no subdomain -> cookie NOT set");
       }
-    } catch {
-      // Non-JSON body (e.g. an error) — nothing to persist.
+    } catch (e) {
+      console.log("[sign_in] failed to parse body / set subdomain:", e);
     }
   }
 
+  console.log("[sign_in] final set-cookie headers:", res.headers.getSetCookie());
   return res;
 }
