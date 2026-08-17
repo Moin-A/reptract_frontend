@@ -22,7 +22,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const api = new ReptrackApi();
 
   // Stream the multipart request straight through (composer sends FormData).
-  const response = await fetch(`${api.baseUrl}/campaign/posts/${id}`, {
+  const response = await fetch(`${await api.resolvedBaseUrl()}/campaign/posts/${id}`, {
     method: "PATCH",
     body: req.body,
     duplex: "half",

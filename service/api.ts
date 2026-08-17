@@ -58,6 +58,13 @@ export class ReptrackApi {
     const res = await fetch(`${baseUrl}${endpoint}`, config);
     return res;
   }
+
+  // Resolve the target base host (from the subdomain cookie). For routes that must
+  // build the fetch themselves — e.g. streaming a multipart body straight through.
+  async resolvedBaseUrl(): Promise<string | undefined> {
+    this.baseUrl ??= this.resolveBaseUrl();
+    return this.baseUrl;
+  }
 }
 
 // Client-side fetch wrapper with 401 interceptor.

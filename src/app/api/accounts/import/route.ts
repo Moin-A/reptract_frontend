@@ -13,14 +13,12 @@ export async function POST(req: Request) {
   const forward = new FormData();
   forward.append("file", file);
 
-  // Bypass ReptrackApi.request here: it hardcodes a JSON Content-Type, which
-  // would corrupt the multipart body. fetch sets the boundary itself when the
-  // body is a FormData and no Content-Type is given.
+  // request() omits Content-Type for a FormData body, so fetch sets the multipart
+  // boundary itself — and it resolves the tenant base host from the subdomain cookie.
   const api = new ReptrackApi();
-  const response = await fetch(`${api.baseUrl}/accounts/import`, {
+  const response = await api.request("/accounts/import", {
     method: "POST",
     body: forward,
-    credentials: "include",
     headers: { Cookie: cookieStore.toString() },
   });
 
