@@ -31,14 +31,11 @@ export async function POST(req: Request) {
       const ws = JSON.parse(body)?.user?.workspace;
       const subdomain = ws?.subdomain ?? ws?.name;
       if (subdomain) {
-        res.cookies.set({
-          name: "subdomain",
-          value: subdomain,
-          path: "/",
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-        });
+        // Append as a raw Set-Cookie, same path as the session cookies above —
+        // mixing res.cookies.set() with res.headers.append() drops one of them.
+        const attrs = [`subdomain=${encodeURIComponent(subdomain)}`, "Path=/", "HttpOnly", "SameSite=Lax"];
+        if (process.env.NODE_ENV === "production") attrs.push("Secure");
+        res.headers.append("set-cookie", attrs.join("; "));
       }
     } catch {
       // Non-JSON body (e.g. an error) — nothing to persist.
