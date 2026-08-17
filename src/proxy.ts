@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServerUser } from "../service/api";
+import { Session } from "inspector/promises";
 
 
 const PUBLIC_PATHS = ["/"];
@@ -25,7 +26,7 @@ export async function proxy(request: NextRequest) {
       }
 
       if (!initialUser.workspace) {
-
+        const workspace = request.cookies.get("workspace")?.value;
         return NextResponse.redirect(new URL(BILLING_CHECKOUT_URL));
       }
   } catch {
