@@ -140,7 +140,7 @@ export default function LandingPage() {
               </Button>
             </Link>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">No credit card required · Set up in 5 minutes</p>
+          <p className="mt-4 text-sm text-muted-foreground">Plans from ₹500/mo · Set up in 5 minutes</p>
         </div>
       </section>
 
@@ -220,7 +220,7 @@ export default function LandingPage() {
               <div className="h-3 w-3 rounded-full bg-danger" />
               <div className="h-3 w-3 rounded-full bg-warning" />
               <div className="h-3 w-3 rounded-full bg-success" />
-              <span className="ml-2 text-xs text-sidebar-text">reptrack-ui.vercel.app/dashboard</span>
+              <span className="ml-2 text-xs text-sidebar-text">app.reptrack.co.in/dashboard</span>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
