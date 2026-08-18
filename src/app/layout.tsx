@@ -14,7 +14,7 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "RepTrack — Train Smarter. Hit Harder.",
-  description: "The gym OS built for athletes who track everything. 1,200+ programmes, elite coaching, and real-time progress analytics.",
+  description: "Multi-tenant CRM built for gyms: member management, sales pipeline, class scheduling, and campaigns.",
 };
 
 export default async function RootLayout({
