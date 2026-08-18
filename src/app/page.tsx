@@ -146,13 +146,18 @@ export default function LandingPage() {
 
       {/* Stats bar */}
       <section className="bg-sidebar-bg py-14 px-6">
-        <div className="mx-auto grid grid-cols-2 md:grid-cols-4 gap-10" style={{ maxWidth: "var(--page-max-w)" }}>
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="text-4xl font-extrabold text-brand">{s.value}</p>
-              <p className="mt-1 text-sm text-sidebar-text">{s.label}</p>
-            </div>
-          ))}
+        <div className="mx-auto" style={{ maxWidth: "var(--page-max-w)" }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+            {stats.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-4xl font-extrabold text-brand">{s.value}</p>
+                <p className="mt-1 text-sm text-sidebar-text">{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-xs text-sidebar-text">
+            Sample figures for illustration — not verified performance metrics.
+          </p>
         </div>
       </section>
 
@@ -253,8 +258,11 @@ export default function LandingPage() {
       <section id="testimonials" className="py-24 px-6 bg-surface">
         <div className="mx-auto" style={{ maxWidth: "var(--page-max-w)" }}>
           <div className="text-center mb-16">
+            <span className="inline-block mb-4 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+              Sample content — illustrative, not real customers
+            </span>
             <h2 className="text-4xl font-bold tracking-tight mb-4">Loved by gym owners</h2>
-            <p className="text-muted-foreground">Real feedback from real fitness businesses.</p>
+            <p className="text-muted-foreground">Placeholder testimonials shown as examples ahead of launch.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((t) => (
