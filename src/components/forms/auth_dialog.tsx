@@ -161,6 +161,32 @@ const IZap    = (p: IP) => <Ic {...p}><path d="M13 3 4 14h7l-1 7 9-11h-7l1-7Z"/>
 const IShield = (p: IP) => <Ic {...p}><path d="M12 3 4 7v5c0 4.4 3.4 8.5 8 9.5 4.6-1 8-5.1 8-9.5V7l-8-4Z"/></Ic>;
 const IUsers  = (p: IP) => <Ic {...p}><circle cx="9" cy="7" r="3"/><path d="M3 20c.9-3.3 3.3-5 6-5s5.1 1.7 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M21 20c-.6-2.6-2.3-4-4-4"/></Ic>;
 
+// ── Demo credentials box ────────────────────────────────────────────────────
+const DEMO_TENANTS = [
+  { label: 'Tenant 1', email: 'moinahmedptw@gmail.com',      password: 'Test123' },
+  { label: 'Tenant 2', email: 'm0inahmedquintype@gmail.com', password: 'RepTrack@123' },
+] as const;
+
+function DemoCredentials() {
+  return (
+    <div style={{
+      border: `1px solid ${T.line}`, borderRadius: 8, padding: '10px 12px',
+      marginTop: 10, background: '#FAFAF8', textAlign: 'center',
+    }}>
+      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em',
+                    textTransform: 'uppercase', color: T.muted, marginBottom: 6 }}>
+        Demo credentials
+      </div>
+      {DEMO_TENANTS.map(t => (
+        <div key={t.label} style={{ fontSize: 10.5, color: T.ink, marginBottom: 4, lineHeight: 1.6 }}>
+          <div><b>{t.label} Email:</b> {t.email}</div>
+          <div><b>Password:</b> {t.password}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Field — label / inline error ───────────────────────────────────────────
 function Field({ label, hint, error, children }: {
   label: string; hint?: React.ReactNode; error?: string | null; children: React.ReactNode;
@@ -440,6 +466,7 @@ export function AuthForm() {
                   <a href="#" style={{ color: T.muted, textDecoration: 'underline' }}>Terms</a> and{' '}
                   <a href="#" style={{ color: T.muted, textDecoration: 'underline' }}>Privacy policy</a>.
                 </p>
+                {f.mode === 'signin' && <DemoCredentials />}
               </div>
             </form>
           )}
