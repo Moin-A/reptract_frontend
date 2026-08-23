@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     const { name, email, password } = await req.json();
-    const api = new ReptrackApi();
+    const api = new ReptrackApi({ public: true });
 
     const response = await api.request('/users', {
         method: 'POST',

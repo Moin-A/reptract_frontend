@@ -135,7 +135,7 @@ export type ServerUser = {
 export async function getServerUser(): Promise<ServerUser | null> {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
-  const api = new ReptrackApi();
+  const api = new ReptrackApi({ public: true });
   try {
     const res = await api.request("/users/sessions/me", {
       headers: { Cookie: cookieStore.toString() },

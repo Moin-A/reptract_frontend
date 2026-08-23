@@ -3,7 +3,7 @@ import { ReptrackApi } from "../../../../../service/api";
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();
-  const api = new ReptrackApi();
+  const api = new ReptrackApi({ public: true });
 
   const upstream = await api.request("/users/sign_in", {
     method: "POST",
