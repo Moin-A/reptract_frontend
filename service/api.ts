@@ -1,14 +1,18 @@
 // Build a tenant-scoped API base by prepending the workspace subdomain to the
-// public API host, so Apartment resolves that tenant's schema. A leading "api."
-// on the public host (prod) is stripped first; protocol/port are preserved.
-//   http://lvh.me:3000         -> http://ironworks.lvh.me:3000
-//   https://api.reptrack.co.in -> https://ironworks.reptrack.co.in
+// public API host, so Apartment resolves that tenant's schema. A leading
+// "api." (prod) or "staging." (staging) on the public host is stripped first
+// so every environment lands on the same *.reptrack.co.in shape — staging
+// tenant traffic is routed to the staging backend at the infra layer, not by
+// hostname. Protocol/port are preserved.
+//   http://lvh.me:3000            -> http://ironworks.lvh.me:3000
+//   https://api.reptrack.co.in     -> https://ironworks.reptrack.co.in
+//   https://staging.reptrack.co.in -> https://ironworks.reptrack.co.in
 export function tenantApiUrl(subdomain: string): string | undefined {
   const base = process.env.API_URL;
   if (!base) return base;
   try {
     const url = new URL(base);
-    const baseHost = url.hostname.replace(/^api\./, "");
+    const baseHost = url.hostname.replace(/^(api|staging)\./, "");
     url.hostname = `${subdomain}.${baseHost}`;
     return url.origin;
   } catch {
@@ -20,17 +24,25 @@ export class ReptrackApi {
   // Resolved once per instance, lazily (see resolveBaseUrl).
   private baseUrl?: Promise<string | undefined>;
 
-  // Picks the target host from the `subdomain` cookie (set at sign-in from
-  // workspace.schema_name): with a subdomain it targets that tenant's host so
-  // Apartment routes to its schema; without one it uses the public API host
-  // (API_URL). Async (reads cookies), so it resolves lazily in request().
+  // Pass { public: true } for auth/public endpoints (sign_in, sign_out, /me,
+  // /users) — those live in the public schema and must NOT be routed to a tenant
+  // subdomain (a stale subdomain cookie would otherwise send sign-in to e.g.
+  // ironworks.reptrack.co.in, which may not even resolve in DNS).
+  constructor(private opts: { public?: boolean } = {}) {}
+
+  // Picks the target host from the `subdomain` cookie (set at sign-in from the
+  // workspace subdomain): with a subdomain it targets that tenant's host so
+  // Apartment routes to its schema; without one (or when public) it uses the
+  // public API host (API_URL). Async (reads cookies), resolved lazily in request().
   private async resolveBaseUrl(): Promise<string | undefined> {
-    try {
-      const { cookies } = await import("next/headers");
-      const subdomain = (await cookies()).get("subdomain")?.value;
-      if (subdomain) return tenantApiUrl(subdomain);
-    } catch {
-      // No request context (e.g. build time) — fall through to the public host.
+    if (!this.opts.public) {
+      try {
+        const { cookies } = await import("next/headers");
+        const subdomain = (await cookies()).get("subdomain")?.value;
+        if (subdomain) return tenantApiUrl(subdomain);
+      } catch {
+        // No request context (e.g. build time) — fall through to the public host.
+      }
     }
     return process.env.API_URL;
   }
