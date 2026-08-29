@@ -27,8 +27,8 @@ export async function POST(req: Request) {
   }
 
   // NOTE: confirm notif's subscribe path + body shape. This forwards the raw
-  // subscription JSON ({ endpoint, keys }) to POST /subscriptions.
-  const response = await fetch(`${NOTIF_URL}/subscriptions`, {
+  // subscription JSON ({ endpoint, keys }) to POST /notifications.
+  const response = await fetch(`${NOTIF_URL}/notifications`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
