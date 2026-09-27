@@ -80,11 +80,23 @@ export class ReptrackApi {
 }
 
 // Client-side fetch wrapper with 401 interceptor.
+// On JWT expiry, silently refreshes via the refresh_token cookie and retries.
 // Use this instead of raw fetch() in client components.
 export async function clientFetch(url: string, options?: RequestInit): Promise<Response> {
   const res = await fetch(url, { credentials: "include", ...options });
 
-  if (res.status === 401 && window.location.pathname !== "/") {
+  if (res.status === 401) {
+    if (window.location.pathname === "/") return res;
+
+    const refresh = await fetch("/api/users/sessions/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (refresh.ok) {
+      return fetch(url, { credentials: "include", ...options });
+    }
+
     window.location.href = "/";
   }
 
