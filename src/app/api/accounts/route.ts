@@ -1,4 +1,4 @@
-import { ReptrackApi } from "../../../../service/api";
+import { ReptrackApi, relayResponse } from "../../../../service/api";
 import { cookies } from "next/headers";
 
 export async function GET(req: Request) {
@@ -11,8 +11,7 @@ export async function GET(req: Request) {
     },
   });
 
-  const data = await response.json();
-  return Response.json(data, { status: response.status });
+  return relayResponse(response);
 }
 
 export async function POST(req: Request) {
@@ -28,6 +27,5 @@ export async function POST(req: Request) {
     },
   });
 
-  const data = await response.json();
-  return Response.json(data, { status: response.status });
+  return relayResponse(response);
 }

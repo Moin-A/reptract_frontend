@@ -1,4 +1,4 @@
-import { ReptrackApi } from "../../../../../../service/api";
+import { ReptrackApi, relayResponse } from "../../../../../../service/api";
 import { cookies } from "next/headers";
 
 export async function GET() {
@@ -11,6 +11,5 @@ export async function GET() {
     },
   });
 
-  const data = await response.json();
-  return Response.json(data, { status: response.status });
+  return relayResponse(response);
 }

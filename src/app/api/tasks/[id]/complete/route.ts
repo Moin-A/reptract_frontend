@@ -1,4 +1,4 @@
-import { ReptrackApi } from "../../../../../../service/api";
+import { ReptrackApi, relayResponse } from "../../../../../../service/api";
 import { cookies } from "next/headers";
 
 // POST /api/tasks/:id/complete — marks the task completed.
@@ -14,6 +14,5 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     },
   });
 
-  const data = await response.json();
-  return Response.json(data, { status: response.status });
+  return relayResponse(response);
 }

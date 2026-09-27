@@ -147,3 +147,16 @@ export async function getServerUser(): Promise<ServerUser | null> {
     return null;
   }
 }
+// Relay an upstream Rails response to the browser, preserving its status.
+// Rails can answer with an empty body (e.g. 401 on an expired JWT, 204 No
+// Content, or a gateway error page), so never assume JSON — calling
+// response.json() on an empty body throws and turns the real status into a 500.
+export async function relayResponse(response: Response): Promise<Response> {
+  const text = await response.text();
+  if (!text) return new Response(null, { status: response.status });
+  try {
+    return Response.json(JSON.parse(text), { status: response.status });
+  } catch {
+    return Response.json({ error: text }, { status: response.status });
+  }
+}
